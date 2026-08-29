@@ -8,6 +8,7 @@ venv
 US_Contacts.csv
 
 # Generated codeplug output and CPS exports
+output/
 uv878/
 uv890/
 
