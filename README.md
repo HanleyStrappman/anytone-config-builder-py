@@ -220,8 +220,6 @@ ends option parsing, and unique option prefixes such as `--sort` are accepted.
 - **CTCSS tones are passed through as written.** An input of `123` stays `123`,
   where a radio's own export says `123.0`. Harmless if your CPS is relaxed about
   it; normalise the input file if it is not.
-- **Talkgroup IDs are not trimmed.** A stray space in the talkgroups CSV
-  (`Simplex 99, 99`) reaches the output as ` 99`.
 - **Analog channels carry digital defaults.** They get `Busy Lock/TX Permit` from
   the defaults file where a radio would write `Off`, and their `Contact` is left
   blank where the CPS back-fills a placeholder talkgroup. Harmless — the CPS

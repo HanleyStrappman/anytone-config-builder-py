@@ -704,7 +704,9 @@ class ConfigBuilder:
                                 f"apart. Using the last one.")
                     originals[name] = row[0]
 
-                    self.talkgroup_mapping[name] = row[1]
+                    # A stray space around an ID reaches both channels.csv and
+                    # talkgroups.csv, where the CPS wants a bare number.
+                    self.talkgroup_mapping[name] = row[1].strip()
                     self.talkgroup_order[name] = index
         finally:
             self.file_name, self.line_number = saved
