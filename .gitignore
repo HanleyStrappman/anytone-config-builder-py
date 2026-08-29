@@ -9,8 +9,8 @@ US_Contacts.csv
 
 # Generated codeplug output and CPS exports, at the repo root only -- these
 # names also occur under tests/golden/, where the files are wanted.
+/codeplug/
 /output/
-/uv878/
 /uv878ii/
 /uv890/
 
