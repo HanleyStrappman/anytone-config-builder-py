@@ -1,0 +1,3 @@
+Zone,Channel Name,Bandwidth,Power,RX Freq,TX Freq,CTCSS Decode,CTCSS Encode,TX Prohibit
+APRS - Analog,146.500 aprs,25K,High,146.5,146.5,Off,Off,Off
+Marine,Marine 16,25K,High,156.8,156.8,Off,D023N,On

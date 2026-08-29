@@ -1,0 +1,14 @@
+.DS_Store
+.idea
+.venv
+venv
+
+
+# Large third-party contact database, not read by the builder
+US_Contacts.csv
+
+# Generated codeplug output and CPS exports
+uv878/
+uv890/
+
+__pycache__/

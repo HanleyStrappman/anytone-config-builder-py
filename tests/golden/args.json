@@ -1,0 +1,162 @@
+{
+  "abbrev-hotspot": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
+      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+    },
+    "output": ""
+  },
+  "abbrev-nick": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "df5fadab62b21474d7c54be7aceeea0f7726bb0456d8f8b13c91a1d0237c9a08",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "750474f037166940cd0f44694b6763e0c6dd06e2ddb801eda0075f369fd6c200"
+    },
+    "output": ""
+  },
+  "abbrev-sort": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
+      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "db5365bcaf318555d638d715b306d6edada5a1adf9e07ec4695cda14727a5c0a"
+    },
+    "output": ""
+  },
+  "double-dash": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+  },
+  "empty-config-value": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Couldn't open file '/channel-defaults.csv': No such file or directory\n"
+  },
+  "missing-analog-arg": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+  },
+  "missing-outdir": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+  },
+  "no-args": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+  },
+  "no-config-flag": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Couldn't open file 'config/channel-defaults.csv': No such file or directory\n"
+  },
+  "space-separated": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
+      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+    },
+    "output": ""
+  },
+  "stray-positional": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
+      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+    },
+    "output": ""
+  },
+  "two-positionals": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
+      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+    },
+    "output": ""
+  },
+  "unknown-long": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: bogus\n"
+  },
+  "unknown-short": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: x\n"
+  },
+  "unknown-uppercase": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: bogus\n"
+  },
+  "unknown-with-value": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: bogus\n"
+  }
+}

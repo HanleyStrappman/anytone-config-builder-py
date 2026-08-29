@@ -1,0 +1,352 @@
+{
+  "analog-extra-column": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: There are too many columns in 'Analog' file, line 1.\n"
+  },
+  "bad-bandwidth": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Analog Mode: '50K' is not one of: 25K, 12.5K [On line #1 of Analog file.]\n"
+  },
+  "bad-call-type": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Call Type: 'Broadcast Call' is not one of: Private Call, Group Call [On line #1 of Digital-Others file.]\n"
+  },
+  "bad-color-code": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Color Code: '17' must be an number between 0 and 16 (inclusive) [On line #1 of Digital-Others file.]\n"
+  },
+  "bad-color-repeater": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "69901d8bcda1adc88ab3143a18a76e88b81f7eec07ed76ed2ef538379545ac74",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Color Code: '-1' must be an number between 0 and 16 (inclusive) [On line #1 of Digital-Repeater file.]\n"
+  },
+  "bad-ctcss": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid CTCSS/DCS: '999' must be an number between 0 and 300 (inclusive) [On line #1 of Analog file.]\n"
+  },
+  "bad-freq-analog": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Frequency: '1465' must be an number between 0 and 500 (inclusive) [On line #1 of Analog file.]\n"
+  },
+  "bad-freq-nonnumeric": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Frequency: 'abc' must be an number between 0 and 500 (inclusive) [On line #1 of Analog file.]\n"
+  },
+  "bad-hotspot": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Hotspot TX Permit: 'maybe' is not one of: always, same-color-code [On line #0 of none file.]\n"
+  },
+  "bad-matrix-timeslot": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "69901d8bcda1adc88ab3143a18a76e88b81f7eec07ed76ed2ef538379545ac74",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Time Slot: '3' is not one of: 1, 2, - [On line #1 of Digital-Repeater file.]\n"
+  },
+  "bad-nicknames": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Nickname Mode: 'sometimes' is not one of: off, prefix, suffix, prefix-forced, suffix-forced [On line #0 of none file.]\n"
+  },
+  "bad-power-analog": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On line #1 of Analog file.]\n"
+  },
+  "bad-power-repeater": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "69901d8bcda1adc88ab3143a18a76e88b81f7eec07ed76ed2ef538379545ac74",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Power Level: 'Extreme' is not one of: Low, Mid, High, Turbo [On line #1 of Digital-Repeater file.]\n"
+  },
+  "bad-sorting": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Sort Order: 'random' is not one of: alpha, repeaters-first, analog-first [On line #0 of none file.]\n"
+  },
+  "bad-timeslot": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Time Slot: '3' is not one of: 1, 2, - [On line #1 of Digital-Others file.]\n"
+  },
+  "bad-tx-permit": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid TX Permit: 'Whenever' is not one of: Always, ChannelFree, Same Color Code, Different Color Code [On line #1 of Digital-Others file.]\n"
+  },
+  "bad-tx-prohibit": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid TX Prohibit: 'Yes' is not one of: On, Off [On line #1 of Analog file.]\n"
+  },
+  "chan-name-no-fit": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
+      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "66b6d9052160bf0fdbeed703a2c2cbb7bc3d0e98d1685fc2d4060add7d0db11b"
+    },
+    "output": "ERROR: Invalid Zone: 'AriellllllllllVHF' is more than 16 characters, truncated to 'AriellllllllllVH' [On line #1 of Digital-Repeater file.]\n"
+  },
+  "empty-analog": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": "09fb0a14c39799507bd1af8084e0e2f64d51ff5b05bba250a421e1826a94d464",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "f2fa5bd4bce45004c5d40753c5d31e4b7339f06fe9d6689e0d6a023c68b60092"
+    },
+    "output": ""
+  },
+  "hdr-analog-short": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: CSV header does not match for Analog file (found '' expected 'TX Prohibit')\n"
+  },
+  "hdr-analog-wrong": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: CSV header does not match for Analog file (found 'Chanel Name' expected 'Channel Name')\n"
+  },
+  "hdr-others-wrong": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: CSV header does not match for Digital-Others file (found 'Colour Code' expected 'Color Code')\n"
+  },
+  "hdr-repeaters-wrong": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "69901d8bcda1adc88ab3143a18a76e88b81f7eec07ed76ed2ef538379545ac74",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: CSV header does not match for Digital-Repeater file (found 'Zone' expected 'Zone Name')\n"
+  },
+  "long-chan-name": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "e88945b83a73b11099a418cb60f56acb7a4e333b0ae7a63db569bca7e50cf717",
+      "scanlists.csv": "52c2c5fd185eb3a8ce11da9c7eb7d9f2543de560d925ae6e06cd77a068514650",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "c3066d445966e4c67bc52739a1f3775d08a45133725c56cab4539d76b3c08057"
+    },
+    "output": "ERROR: Invalid Channel Name: '146.500 aprs long name' is more than 16 characters, truncated to '146.500 aprs lon' [On line #1 of Analog file.]\n"
+  },
+  "long-talkgroup": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "6a08d72a0d0461c0310bd6b6c846ca2d5105495ecf147c2786831b93d9d9b039",
+      "scanlists.csv": "4f1c08256b4ea866c96f61aca6d54840b8583701c5b6e7766d1f24285f12582e",
+      "talkgroups.csv": "b7fddd96c04787a7e05a82088ed7e33c8718b7d464a4fc3b8e2817cb54d1b59c",
+      "zones.csv": "08091678d2f502641827543e6cbe3f6e72e47d15951647b1cd6004352da47604"
+    },
+    "output": "ERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #0 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #1 of Digital-Others file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #2 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #2 of Digital-Repeater file.]\n"
+  },
+  "long-zone-analog": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "a7ce1b550e430d38c38b6cd56e6bdfb025697446d43e3fe7910e63b775ba6191",
+      "scanlists.csv": "a3c3347ceafb056ecd42d59a4b2a9759100ff0df69515a2fe1aa98f42a83b044",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "693feaee9c656799480d98e63a3d85cc8b78df54489cb20a1e0190055d6c840c"
+    },
+    "output": "ERROR: Invalid Zone: 'APRS - Analog Zone XYZ' is more than 16 characters, truncated to 'APRS - Analog Zo' [On line #1 of Analog file.]\n"
+  },
+  "long-zone-repeater": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
+      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "3d931d1570b95d9a4232e26753c83658b9cd7e27b54023bb5de4499b7cd343e6"
+    },
+    "output": "ERROR: Invalid Zone: 'Ariel/Ariel VHF Long' is more than 16 characters, truncated to 'Ariel/Ariel VHF ' [On line #1 of Digital-Repeater file.]\n"
+  },
+  "missing-analog": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Couldn't open file '<in>/analog.csv': No such file or directory\n"
+  },
+  "missing-repeaters": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "69901d8bcda1adc88ab3143a18a76e88b81f7eec07ed76ed2ef538379545ac74",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Couldn't open file '<in>/repeaters.csv': No such file or directory\n"
+  },
+  "missing-talkgroups": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Couldn't open file '<in>/talkgroups.csv': No such file or directory\n"
+  },
+  "others-extra-column": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: There are too many columns in 'Digital-Others' file, line 1.\n"
+  },
+  "tg-call-type-conflict": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "69901d8bcda1adc88ab3143a18a76e88b81f7eec07ed76ed2ef538379545ac74",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Time Slot: '1P' is not one of: 1, 2, - [On line #1 of Digital-Repeater file.]\n"
+  },
+  "truncation-collision": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "c18a1c3dea2534d0cb7dbf3627cff27d4f72204ba193a2b8a98193fd2dc152a6",
+      "scanlists.csv": "10e43c6ff7b0841756ae3575ead1bf1cb38b59732a4f1ea691d674d6de868dd5",
+      "talkgroups.csv": "6a3f7be8d9eaa4de6e1521cac1939a1f91606e53256a6521ae14d1535b3e9b19",
+      "zones.csv": "d9a9872b2061ac7ec6a39adb7b38da7aa4bb41fc806210c82c4a6ebb74ffd754"
+    },
+    "output": "WARNING: Talkgroups 'Local 1 Northwest A' and 'Local 1 Northwest B' both shorten to 'Local 1 Northwes', so the radio cannot tell them apart. Using the last one.\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #0 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest B' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest B' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Digital-Others file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #2 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #2 of Digital-Repeater file.]\n"
+  },
+  "unknown-talkgroup": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "aabe937b21934728f0e973f40d453263b9c42821ce9a1f3da283e8321520105f",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Talkgroup 'Nowhere 9' is referenced but not defined in the talkgroup input CSV file\n"
+  },
+  "unknown-tg-matrix": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "41d5cdc4a0826264c09f810598a94fe4c8b3aa95bb007d8e7cb1c016a43ee7d3",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Talkgroup 'Nowhere 9' is referenced but not defined in the talkgroup input CSV file\n"
+  }
+}
