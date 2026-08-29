@@ -3,7 +3,7 @@
     "exit": 0,
     "files": {
       "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
       "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
     },
@@ -13,9 +13,19 @@
     "exit": 0,
     "files": {
       "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
-      "scanlists.csv": "df5fadab62b21474d7c54be7aceeea0f7726bb0456d8f8b13c91a1d0237c9a08",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
       "zones.csv": "750474f037166940cd0f44694b6763e0c6dd06e2ddb801eda0075f369fd6c200"
+    },
+    "output": ""
+  },
+  "abbrev-radio": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "85ca95ba5cd243cd518e984ae2a91a32cbccb44cc3e57b2c0a445f2a7b87233b",
+      "scanlists.csv": "6baf17a294b57c0ae379213b7dcba29ca5e090e3560daf419a4cbf729e917586",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "21c98dacdb70c8c0c270c50ffb2ebd095deec5cbb2ec825ef25665ffbf626ea8"
     },
     "output": ""
   },
@@ -23,7 +33,7 @@
     "exit": 0,
     "files": {
       "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
       "zones.csv": "db5365bcaf318555d638d715b306d6edada5a1adf9e07ec4695cda14727a5c0a"
     },
@@ -37,7 +47,7 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\n"
   },
   "empty-config-value": {
     "exit": 255,
@@ -57,7 +67,7 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\n"
   },
   "missing-outdir": {
     "exit": 255,
@@ -67,7 +77,7 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\n"
   },
   "no-args": {
     "exit": 255,
@@ -77,7 +87,7 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\n"
   },
   "no-config-flag": {
     "exit": 255,
@@ -89,11 +99,41 @@
     },
     "output": "ERROR: Couldn't open file 'config/channel-defaults.csv': No such file or directory\n"
   },
+  "radio-unknown": {
+    "exit": 255,
+    "files": {
+      "channels.csv": null,
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
+    },
+    "output": "ERROR: Invalid Radio: 'uv999' is not one of: uv878, uv878ii, uv890 [On line #0 of none file.]\n"
+  },
+  "radio-uv878ii": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "eb13593e58768f02a9aa6449d50437c8285e2e66173455aad9a4f2b9953e3349",
+      "scanlists.csv": "6baf17a294b57c0ae379213b7dcba29ca5e090e3560daf419a4cbf729e917586",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "21c98dacdb70c8c0c270c50ffb2ebd095deec5cbb2ec825ef25665ffbf626ea8"
+    },
+    "output": ""
+  },
+  "radio-uv890": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "85ca95ba5cd243cd518e984ae2a91a32cbccb44cc3e57b2c0a445f2a7b87233b",
+      "scanlists.csv": "6baf17a294b57c0ae379213b7dcba29ca5e090e3560daf419a4cbf729e917586",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "21c98dacdb70c8c0c270c50ffb2ebd095deec5cbb2ec825ef25665ffbf626ea8"
+    },
+    "output": ""
+  },
   "space-separated": {
     "exit": 0,
     "files": {
       "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
       "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
     },
@@ -103,7 +143,7 @@
     "exit": 0,
     "files": {
       "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
       "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
     },
@@ -113,7 +153,7 @@
     "exit": 0,
     "files": {
       "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "88013a2effe60c8d09f9d37e8ee38f66a55c22c9b243d6479d3fae4df86a63ba",
+      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
       "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
     },
@@ -127,7 +167,7 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: bogus\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\nUnknown option: bogus\n"
   },
   "unknown-short": {
     "exit": 255,
@@ -137,7 +177,7 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: x\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\nUnknown option: x\n"
   },
   "unknown-uppercase": {
     "exit": 255,
@@ -147,7 +187,7 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: bogus\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\nUnknown option: bogus\n"
   },
   "unknown-with-value": {
     "exit": 255,
@@ -157,6 +197,6 @@
       "talkgroups.csv": null,
       "zones.csv": null
     },
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\nUnknown option: bogus\n"
+    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--radio=(uv878|uv878ii|uv890)]\nUnknown option: bogus\n"
   }
 }

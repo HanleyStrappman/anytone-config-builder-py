@@ -76,6 +76,113 @@ VAL_DMR_MODE_REPEATER = 1
 LENGTH_CHAN_NAME = 16
 
 
+################################################################################
+##########   RADIO PROFILES
+################################################################################
+
+# Channels are assembled internally in the UV878 column layout -- the CHAN_*
+# constants above are indices into that layout.  A profile describes how to turn
+# that into one radio's import files: what to call them, which column each
+# internal field lands in, and the handful of places the other three files differ.
+
+
+# The fixed tail of a scanlist row, columns 5 to 17.  Taken from UV878 and UV890
+# exports, which agree and use the same values on every scanlist they contain.
+# The Perl original pushed only twelve values here, leaving the row a field short
+# of its own header and shifting everything from Priority Channel 1 leftwards.
+SCANLIST_DETAILS = ("Off", "Off", "Off", "", "", "Off", "", "", "Selected",
+                    "0.5", "0.1", "0.1", "0.0")
+
+# Every radio writes the same four file names; only their contents differ.
+OUTPUT_FILES = {"channels": "channels.csv", "zones": "zones.csv",
+                "scanlists": "scanlists.csv", "talkgroups": "talkgroups.csv"}
+
+
+class RadioProfile:
+    """How one radio's CPS wants its four import files shaped."""
+
+    def __init__(self, name, defaults, columns=None,
+                 freq_decimals=None, zone_hide=False, talkgroup_notes=True):
+        self.name = name
+        self.defaults = defaults            # channel defaults file, inside --config
+        self.columns = columns              # output column -> internal CHAN_* field
+        self.freq_decimals = freq_decimals  # None to pass frequencies through as-is
+        self.zone_hide = zone_hide          # trailing "Zone Hide " column
+        self.talkgroup_notes = talkgroup_notes  # Country and Remarks columns
+
+    def field_for_column(self, column):
+        """Which internal field feeds this output column, or None for a default.
+
+        A profile with no explicit map works in the layout the builder already
+        uses, so each column is fed by the identically numbered field.
+        """
+        if self.columns is None:
+            return column
+        return self.columns.get(column)
+
+    def freq(self, value):
+        """Render a frequency the way this radio's CPS writes them."""
+        if self.freq_decimals is None:
+            return value
+        return f"{float(value):.{self.freq_decimals}f}"
+
+
+# The UV890 keeps the same first nine columns, then inserts a talkgroup ID column
+# which shifts the rest along by one, and carries the DMR mode and PTT prohibit
+# fields inline rather than appended at the end.  It also writes the TX color code
+# ("txcc") as a separate column from the RX one, always with the same value.
+UV890_COLUMNS = {
+    0: CHAN_NUM,
+    1: CHAN_NAME,
+    2: CHAN_RX_FREQ,
+    3: CHAN_TX_FREQ,
+    4: CHAN_MODE,
+    5: CHAN_POWER,
+    6: CHAN_BANDWIDTH,
+    7: CHAN_CTCSS_DEC,
+    8: CHAN_CTCSS_ENC,
+    9: CHAN_CONTACT,
+    10: CHAN_CALL_TYPE_OLD,
+    11: CHAN_TG_ID,
+    13: CHAN_TX_PERMIT,
+    14: CHAN_SQUELCH_MODE,
+    20: CHAN_COLOR_CODE,
+    21: CHAN_TIME_SLOT,
+    22: CHAN_SCANLIST_NAME,
+    24: CHAN_TX_PROHIBIT,
+    45: CHAN_DMR_MODE,
+    76: CHAN_COLOR_CODE,
+}
+
+# The AT-D878UVII stops at 55 columns -- the UV890 layout without its NXDN tail,
+# and without the separate TX color code that lives beyond it.
+UV878II_COLUMNS = {column: field for column, field in UV890_COLUMNS.items()
+                   if column < 55}
+
+RADIO_PROFILES = {
+    "uv878": RadioProfile(
+        name="uv878",
+        defaults="channel-defaults.csv",
+    ),
+    "uv878ii": RadioProfile(
+        name="uv878ii",
+        defaults="uv878ii-channel-defaults.csv",
+        columns=UV878II_COLUMNS,
+        freq_decimals=5,
+        zone_hide=True,
+        talkgroup_notes=False,
+    ),
+    "uv890": RadioProfile(
+        name="uv890",
+        defaults="uv890-channel-defaults.csv",
+        columns=UV890_COLUMNS,
+        freq_decimals=5,
+        zone_hide=True,
+        talkgroup_notes=False,
+    ),
+}
+
+
 class ConfigError(Exception):
     """A fatal problem with the input data.  Reported to the user, then we stop."""
 
@@ -207,6 +314,10 @@ def validate_hotspot_mode(hotspot_mode):
     return _validate_membership(hotspot_mode, ("always", "same-color-code"), "Hotspot TX Permit")
 
 
+def validate_radio(radio):
+    return _validate_membership(radio, tuple(RADIO_PROFILES), "Radio")
+
+
 def validate_nickname_mode(nickname_mode):
     valid = ("off", "prefix", "suffix", "prefix-forced", "suffix-forced")
     return _validate_membership(nickname_mode, valid, "Nickname Mode")
@@ -256,7 +367,9 @@ def _validate_string_length(type_name, string, length, ctx=NO_FILE_CONTEXT):
 ################################################################################
 
 class ConfigBuilder:
-    def __init__(self, sort_mode="alpha", hotspot_tx_permit="same-color-code", nickname_mode="off"):
+    def __init__(self, sort_mode="alpha", hotspot_tx_permit="same-color-code",
+                 nickname_mode="off", radio="uv878"):
+        self.profile = RADIO_PROFILES[radio]
         self.sort_mode = sort_mode
         self.hotspot_tx_permit = hotspot_tx_permit
         self.nickname_mode = nickname_mode
@@ -278,14 +391,16 @@ class ConfigBuilder:
 
     def run(self, analog_filename, digital_others_filename, digital_repeaters_filename,
             talkgroups_filename, config_directory, output_directory):
+        files = OUTPUT_FILES
+
         self.read_talkgroups(talkgroups_filename)
-        self.read_channel_csv_default(f"{config_directory}/channel-defaults.csv")
+        self.read_channel_csv_default(f"{config_directory}/{self.profile.defaults}")
 
         try:
-            fh = open(f"{output_directory}/channels.csv", "w",
+            fh = open(f"{output_directory}/{files['channels']}", "w",
                       newline="", encoding="utf-8")
         except OSError:
-            raise ConfigError("Couldn't open channels.csv for writing\n")
+            raise ConfigError(f"Couldn't open {files['channels']} for writing\n")
 
         with fh:
             out = csv_writer(fh)
@@ -294,9 +409,9 @@ class ConfigBuilder:
             self.process_dmr_repeater_file(out, digital_repeaters_filename)
             self.process_analog_file(out, analog_filename)
 
-        self.write_zone_file(f"{output_directory}/zones.csv")
-        self.write_scanlist_file(f"{output_directory}/scanlists.csv")
-        self.write_talkgroup_file(f"{output_directory}/talkgroups.csv")
+        self.write_zone_file(f"{output_directory}/{files['zones']}")
+        self.write_scanlist_file(f"{output_directory}/{files['scanlists']}")
+        self.write_talkgroup_file(f"{output_directory}/{files['talkgroups']}")
 
     ############################################################################
     ##########   CSV OUTPUT ROUTINES
@@ -311,6 +426,9 @@ class ConfigBuilder:
                    "Zone Channel Member TX Frequency",
                    "A Channel", "A Channel RX Frequency", "A Channel TX Frequency",
                    "B Channel", "B Channel RX Frequency", "B Channel TX Frequency"]
+
+        if self.profile.zone_hide:
+            headers.append("Zone Hide ")
 
         self.generate_csv_file(filename, headers, self.zone_config,
                                self.zone_row_builder, cmp_to_key(self.zone_sort))
@@ -331,29 +449,41 @@ class ConfigBuilder:
                                self.scanlist_row_builder, case_insensitive_key)
 
     def write_talkgroup_file(self, filename):
-        headers = ["No.", "Radio ID", "Name", "Country", "Remarks", "Call Type", "Call Alert"]
+        headers = ["No.", "Radio ID", "Name"]
+        if self.profile.talkgroup_notes:
+            headers.extend(["Country", "Remarks"])
+        headers.extend(["Call Type", "Call Alert"])
 
         self.generate_csv_file(filename, headers, self.talkgroup_config,
                                self.talkgroup_row_builder, case_insensitive_key)
 
     def zone_row_builder(self, zone_number, zone_name, zone_record):
-        return self.generic_row_builder(zone_number, zone_name, zone_record,
-                                        zone_row_details, 250, "Zone")
+        values = self.generic_row_builder(zone_number, zone_name, zone_record,
+                                          zone_row_details, 250, "Zone")
+        if self.profile.zone_hide:
+            values.append("0")
+
+        return values
 
     def scanlist_row_builder(self, scan_number, scan_name, scan_record):
+        def details(values, _channel0, _rx0, _tx0):
+            values.extend(SCANLIST_DETAILS)
+
         return self.generic_row_builder(scan_number, scan_name, scan_record,
-                                        scanlist_row_details, 50, "Scanlist")
+                                        details, 50, "Scanlist")
 
     def talkgroup_row_builder(self, tg_number, talkgroup_name, _junk):
         call_type = self.talkgroup_config[talkgroup_name]
 
-        return [tg_number,
-                self.talkgroup_mapping[talkgroup_name],
-                talkgroup_name,
-                "",
-                "",
-                call_type,
-                "None"]
+        row = [tg_number,
+               self.talkgroup_mapping[talkgroup_name],
+               talkgroup_name]
+        if self.profile.talkgroup_notes:
+            row.extend(["", ""])          # Country, Remarks
+
+        row.extend([call_type, "None"])
+
+        return row
 
     def generic_row_builder(self, row_number, row_name, row_record, row_func, row_limit, warning_name):
         values = [row_number, row_name]
@@ -441,8 +571,8 @@ class ConfigBuilder:
             CHAN_NAME: validate_name(row[1], ctx),
             CHAN_BANDWIDTH: validate_bandwidth(row[2], ctx),
             CHAN_POWER: validate_power(row[3], ctx),
-            CHAN_RX_FREQ: validate_freq(row[4], ctx),
-            CHAN_TX_FREQ: validate_freq(row[5], ctx),
+            CHAN_RX_FREQ: self.profile.freq(validate_freq(row[4], ctx)),
+            CHAN_TX_FREQ: self.profile.freq(validate_freq(row[5], ctx)),
             CHAN_CTCSS_DEC: validate_ctcss(row[6], ctx),
             CHAN_CTCSS_ENC: validate_ctcss(row[7], ctx),
             CHAN_TX_PROHIBIT: validate_tx_prohibit(row[8], ctx),
@@ -472,8 +602,8 @@ class ConfigBuilder:
             CHAN_SCANLIST_NAME: validate_zone(row[0], ctx),
             CHAN_NAME: validate_name(row[1], ctx),
             CHAN_POWER: validate_power(row[2], ctx),
-            CHAN_RX_FREQ: validate_freq(row[3], ctx),
-            CHAN_TX_FREQ: validate_freq(row[4], ctx),
+            CHAN_RX_FREQ: self.profile.freq(validate_freq(row[3], ctx)),
+            CHAN_TX_FREQ: self.profile.freq(validate_freq(row[4], ctx)),
             CHAN_COLOR_CODE: validate_color_code(row[5], ctx),
             CHAN_CONTACT: validate_contact(row[6], ctx),
             CHAN_TG_ID: self.talkgroup_mapping.get(row[6]),
@@ -507,8 +637,8 @@ class ConfigBuilder:
             ACB_ZONE_NICKNAME: validate_zone(zone_nick, ctx),
             # row[1] is a comment column
             CHAN_POWER: validate_power(row[2], ctx),
-            CHAN_RX_FREQ: validate_freq(row[3], ctx),
-            CHAN_TX_FREQ: validate_freq(row[4], ctx),
+            CHAN_RX_FREQ: self.profile.freq(validate_freq(row[3], ctx)),
+            CHAN_TX_FREQ: self.profile.freq(validate_freq(row[4], ctx)),
             CHAN_COLOR_CODE: validate_color_code(row[5], ctx),
             CHAN_MODE: VAL_DIGITAL,
         }
@@ -676,19 +806,23 @@ class ConfigBuilder:
     def add_channel(self, out, chan_config, zone_name, scanlist_name, zone_order_index):
         output = []
 
-        for index in sorted(self.channel_csv_default_value):
-            value = self.channel_csv_default_value[index]
-            if chan_config.get(index) is not None:
-                value = chan_config[index]
-            if index == CHAN_NUM:
+        for column in sorted(self.channel_csv_default_value):
+            # Which of our internal fields, if any, this radio wants in this column.
+            field = self.profile.field_for_column(column)
+
+            value = self.channel_csv_default_value[column]
+            if field is not None and chan_config.get(field) is not None:
+                value = chan_config[field]
+            if field == CHAN_NUM:
                 value = self.channel_number
                 self.channel_number += 1
 
-            chan_config[index] = value
+            if field is not None:
+                chan_config[field] = value
 
             if value == "REQUIRED":
                 raise ConfigError(
-                    f"I need a value for '{self.channel_csv_field_name[index]}'\n")
+                    f"I need a value for '{self.channel_csv_field_name[column]}'\n")
 
             output.append(value)
 
@@ -812,11 +946,6 @@ def zone_row_details(values, channel0, rx0, tx0):
     values.extend([channel0, rx0, tx0, channel0, rx0, tx0])
 
 
-def scanlist_row_details(values, _channel0, _rx0, _tx0):
-    values.extend(["Off", "Off", "", "", "Off", "", "", "Selected",
-                   "0.5", "0.5", "0.1", "0.1"])
-
-
 def dmr_mode(chan_config):
     if chan_config[CHAN_RX_FREQ] != chan_config[CHAN_TX_FREQ]:
         return VAL_DMR_MODE_REPEATER
@@ -865,6 +994,7 @@ def usage():
     print("  [--sorting=(alpha|repeaters-first|analog-first)]")
     print("  [--hotspot-tx-permit=(always|same-color-code)]")
     print("  [--nicknames=(off|prefix|suffix)]")
+    print("  [--radio=(uv878|uv878ii|uv890)]")
     sys.exit(255)
 
 
@@ -879,6 +1009,7 @@ def handle_command_line_args(argv):
     parser.add_argument("--sorting", default="alpha")
     parser.add_argument("--nicknames", default="off")
     parser.add_argument("--hotspot-tx-permit", default="same-color-code")
+    parser.add_argument("--radio", default="uv878")
 
     if "--" in argv:
         argv = argv[:argv.index("--")]
@@ -900,6 +1031,7 @@ def handle_command_line_args(argv):
     validate_sort_mode(args.sorting)
     validate_hotspot_mode(args.hotspot_tx_permit)
     validate_nickname_mode(args.nicknames)
+    validate_radio(args.radio)
 
     if (args.analog_csv is None or args.digital_others_csv is None
             or args.digital_repeaters_csv is None or args.talkgroups_csv is None
@@ -917,7 +1049,8 @@ def main(argv=None):
 
     builder = ConfigBuilder(sort_mode=args.sorting,
                             hotspot_tx_permit=args.hotspot_tx_permit,
-                            nickname_mode=args.nicknames)
+                            nickname_mode=args.nicknames,
+                            radio=args.radio)
 
     if args.sorting == "analog-first":
         builder.zone_order_default = 0

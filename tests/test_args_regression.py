@@ -44,7 +44,7 @@ def valid(indir):
             f"--config={CONFIG}"]
 
 
-# name -> (extra argv built from the valid set, whether to pass --output-directory)
+# name -> (argv built from the valid set, whether to pass --output-directory)
 def cases(indir):
     v = valid(indir)
     return {
@@ -64,6 +64,10 @@ def cases(indir):
         "missing-outdir":     (v, False),
         "no-config-flag":     ([a for a in v if not a.startswith("--config")], True),
         "empty-config-value": ([a for a in v if not a.startswith("--config")] + ["--config="], True),
+        "radio-uv878ii":      (v + ["--radio=uv878ii"], True),
+        "radio-uv890":        (v + ["--radio=uv890"], True),
+        "radio-unknown":      (v + ["--radio=uv999"], True),
+        "abbrev-radio":       (v + ["--rad=uv890"], True),
     }
 
 

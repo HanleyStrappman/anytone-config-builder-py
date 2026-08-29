@@ -18,13 +18,14 @@
 """Regression test: the four generated CSVs, over the whole flag matrix.
 
 Runs the builder on the real PNW inputs in the repo root -- as they are, with the
-over-long zone name still in them -- for all 30 combinations of --sorting,
---nicknames and --hotspot-tx-permit, and checks exit status, messages and the
-content of every generated file against the recorded goldens.
+over-long zone name still in them -- for every supported radio crossed with all
+30 combinations of --sorting, --nicknames and --hotspot-tx-permit, and checks
+exit status, messages and the content of every generated file against the
+recorded goldens.
 
-Full copies of the default combination's output are kept under golden/default/ so
-there is something to actually read a diff against; the other 29 are compared by
-digest, which would otherwise cost ~28MB of near-identical CSVs.
+Full copies of each radio's default combination are kept under golden/default/
+so there is something to actually read a diff against; the rest are compared by
+digest, which would otherwise cost tens of MB of near-identical CSVs.
 
     python3 tests/test_output_regression.py            # check
     python3 tests/test_output_regression.py --update   # re-record
@@ -39,10 +40,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _golden import (GOLDEN, OUTPUTS, REAL_INPUTS, REPO, compare, digests, load,
                      report, run, save, updating)
 
+RADIOS = ("uv878", "uv878ii", "uv890")
 DEFAULT_COMBO = "alpha.off.same-color-code"
 FULL_COPIES = os.path.join(GOLDEN, "default")
 
-COMBOS = [(s, n, h)
+COMBOS = [(r, s, n, h)
+          for r in RADIOS
           for s in ("alpha", "repeaters-first", "analog-first")
           for n in ("off", "prefix", "suffix", "prefix-forced", "suffix-forced")
           for h in ("always", "same-color-code")]
@@ -55,30 +58,33 @@ def real_args(outdir, extra):
                    f"--output-directory={outdir}"] + list(extra)
 
 
-def record_combo(work, sort, nick, hot):
-    tag = f"{sort}.{nick}.{hot}"
+def record_combo(work, radio, sort, nick, hot):
+    tag = f"{radio}.{sort}.{nick}.{hot}"
     outdir = os.path.join(work, tag)
     os.makedirs(outdir)
-    extra = [f"--sorting={sort}", f"--nicknames={nick}", f"--hotspot-tx-permit={hot}"]
+    extra = [f"--radio={radio}", f"--sorting={sort}",
+             f"--nicknames={nick}", f"--hotspot-tx-permit={hot}"]
     rc, out = run(real_args(outdir, extra), {REPO: "<repo>", outdir: "<out>"})
     return tag, outdir, {"exit": rc, "output": out, "files": digests(outdir)}
 
 
 work = tempfile.mkdtemp(prefix="acb-outreg-")
 actual, dirs = {}, {}
-for sort, nick, hot in COMBOS:
-    tag, outdir, record = record_combo(work, sort, nick, hot)
+for radio, sort, nick, hot in COMBOS:
+    tag, outdir, record = record_combo(work, radio, sort, nick, hot)
     actual[tag] = record
     dirs[tag] = outdir
 
 if updating():
     save("outputs.json", actual)
     shutil.rmtree(FULL_COPIES, ignore_errors=True)
-    os.makedirs(FULL_COPIES)
-    for name in OUTPUTS:
-        shutil.copy(os.path.join(dirs[DEFAULT_COMBO], name), FULL_COPIES)
-    print(f"recorded {len(OUTPUTS)} full files under "
-          f"{os.path.relpath(FULL_COPIES, REPO)} ({DEFAULT_COMBO})")
+    for radio in RADIOS:
+        into = os.path.join(FULL_COPIES, radio)
+        os.makedirs(into)
+        for name in OUTPUTS:
+            shutil.copy(os.path.join(dirs[f"{radio}.{DEFAULT_COMBO}"], name), into)
+        print(f"recorded {len(OUTPUTS)} full files under "
+              f"{os.path.relpath(into, REPO)} ({DEFAULT_COMBO})")
     shutil.rmtree(work, ignore_errors=True)
     sys.exit(0)
 
@@ -92,17 +98,18 @@ for tag in sorted(actual):
 
 # The default combination is also held as full files, so a digest mismatch there
 # can be turned into a readable diff instead of two hex strings.
-for name in OUTPUTS:
-    golden_file = os.path.join(FULL_COPIES, name)
-    fresh = os.path.join(dirs[DEFAULT_COMBO], name)
-    if not os.path.exists(golden_file):
-        results.append((f"default/{name}", ["no full copy recorded"]))
-    elif not filecmp.cmp(golden_file, fresh, shallow=False):
-        results.append((f"default/{name}",
-                        [f"differs from {os.path.relpath(golden_file, REPO)}; "
-                         f"diff it against {fresh}"]))
-    else:
-        results.append((f"default/{name}", []))
+for radio in RADIOS:
+    for name in OUTPUTS:
+        golden_file = os.path.join(FULL_COPIES, radio, name)
+        fresh = os.path.join(dirs[f"{radio}.{DEFAULT_COMBO}"], name)
+        if not os.path.exists(golden_file):
+            results.append((f"default/{radio}/{name}", ["no full copy recorded"]))
+        elif not filecmp.cmp(golden_file, fresh, shallow=False):
+            results.append((f"default/{radio}/{name}",
+                            [f"differs from {os.path.relpath(golden_file, REPO)}; "
+                             f"diff it against {fresh}"]))
+        else:
+            results.append((f"default/{radio}/{name}", []))
 
 code = report(results, "flag combinations")
 shutil.rmtree(work, ignore_errors=True)

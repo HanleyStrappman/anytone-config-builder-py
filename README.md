@@ -53,6 +53,7 @@ ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On l
 | `--sorting` | `alpha` | `alpha`, `repeaters-first`, or `analog-first`. |
 | `--nicknames` | `off` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
 | `--hotspot-tx-permit` | `same-color-code` | `same-color-code` or `always`. |
+| `--radio` | `uv878` | `uv878`, `uv878ii` or `uv890`. Which CPS layout to write. |
 
 `--sorting` controls zone order: `alpha` sorts every zone by name, while
 `repeaters-first` and `analog-first` put the repeater zones before or after the
@@ -60,6 +61,35 @@ analog and digital-other ones.
 
 `--hotspot-tx-permit=always` sets TX Permit to `Always` on channels whose RX and
 TX frequencies match, which is what a hotspot wants.
+
+### Radios
+
+CPS versions disagree about the shape of the import files, so pick the one
+matching your radio with `--radio`. The file names are the same whichever you
+choose; only the contents differ.
+
+| | `uv878` | `uv878ii` | `uv890` |
+| --- | --- | --- | --- |
+| `channels.csv` columns | 51 | 55 | 77 |
+| `zones.csv` columns | 11 | 12 | 12 |
+| `talkgroups.csv` columns | 7 | 5 | 5 |
+| `scanlists.csv` columns | 18 | 18 | 18 |
+| Frequencies | as written in the input | five decimals | five decimals |
+
+**`uv878` is the layout the Perl original wrote**, kept for older CPS versions.
+If you have an AT-D878UVII, you want `uv878ii`: its channel row differs from the
+old one from column 11 onward, so importing `uv878` output into it would land
+every field in the wrong column.
+
+`uv878ii` and `uv890` share a layout; the UV890 simply continues past column 55
+with a tail of NXDN and miscellaneous settings, and splits the TX color code into
+its own `txcc` column (always the same value as the RX one). Both add a trailing
+`Zone Hide` to zones and drop `Country` and `Remarks` from talkgroups.
+
+Each radio has its own defaults file in the `--config` directory —
+`channel-defaults.csv`, `uv878ii-channel-defaults.csv`,
+`uv890-channel-defaults.csv` — giving the value for every CPS field the inputs
+do not mention.
 
 ### Nicknames
 
@@ -142,8 +172,9 @@ Four files, ready to import:
 The CPS caps a scanlist at 50 channels and a zone at 250. Anything longer is
 truncated with a warning on stdout.
 
-`config/channel-defaults.csv` supplies the value for every CPS field the inputs
-don't mention. Edit it to change defaults across all generated channels.
+The `--config` directory supplies the value for every CPS field the inputs don't
+mention, in a file per radio. Edit it to change defaults across all generated
+channels.
 
 ## Before importing into the CPS
 
@@ -172,10 +203,30 @@ don't mention. Edit it to change defaults across all generated channels.
 - **Errors go to stderr**, warnings to stdout. The Perl printed both to stdout.
 - **A blank line mid-file is skipped** rather than parsed as a row, because
   Python's `csv` yields `[]` where Perl's `Text::CSV` yields a one-element row.
+- **`--radio` is new.** The Perl only ever wrote the one layout, which survives
+  as `uv878`.
+- **Scanlist rows fill all 18 columns.** The Perl emitted only 12 values under
+  its own 18-column header, so everything from `Priority Channel 1` onward sat
+  one column to the left and `Dwell Time[s]` was missing entirely. The values now
+  written are the ones UV878 and UV890 exports both contain, identically on every
+  scanlist.
 
 Argument handling deliberately keeps `Getopt::Long`'s habits: an unknown option
 warns on stderr and prints usage, stray non-option arguments are ignored, `--`
 ends option parsing, and unique option prefixes such as `--sort` are accepted.
+
+## Known issues
+
+- **CTCSS tones are passed through as written.** An input of `123` stays `123`,
+  where a radio's own export says `123.0`. Harmless if your CPS is relaxed about
+  it; normalise the input file if it is not.
+- **Talkgroup IDs are not trimmed.** A stray space in the talkgroups CSV
+  (`Simplex 99, 99`) reaches the output as ` 99`.
+- **Analog channels carry digital defaults.** They get `Busy Lock/TX Permit` from
+  the defaults file where a radio would write `Off`, and their `Contact` is left
+  blank where the CPS back-fills a placeholder talkgroup. Harmless — the CPS
+  normalises both on import — but it is why generated and exported files differ
+  on analog rows.
 
 ## Tests
 
@@ -185,9 +236,9 @@ python3 tests/test_error_regression.py
 python3 tests/test_args_regression.py
 ```
 
-Golden-file regression tests covering the generated files across all 30
-combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`, 35
-malformed-input cases, and 16 command-line cases. They need nothing installed
+Golden-file regression tests covering the generated files for all three radios
+across all 30 combinations of `--sorting`, `--nicknames` and
+`--hotspot-tx-permit`, 35 malformed-input cases, and 20 command-line cases. They need nothing installed
 and run from any directory. See [tests/README.md](tests/README.md) for how to
 re-record them after an intentional change.
 

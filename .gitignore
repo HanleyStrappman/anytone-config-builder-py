@@ -7,9 +7,11 @@ venv
 # Large third-party contact database, not read by the builder
 US_Contacts.csv
 
-# Generated codeplug output and CPS exports
-output/
-uv878/
-uv890/
+# Generated codeplug output and CPS exports, at the repo root only -- these
+# names also occur under tests/golden/, where the files are wanted.
+/output/
+/uv878/
+/uv878ii/
+/uv890/
 
 __pycache__/

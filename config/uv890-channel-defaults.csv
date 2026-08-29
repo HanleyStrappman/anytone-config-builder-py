@@ -1,0 +1,77 @@
+0,No.,REQUIRED
+1,Channel Name,REQUIRED
+2,Receive Frequency,REQUIRED
+3,Transmit Frequency,REQUIRED
+4,Channel Type,REQUIRED
+5,Transmit Power,High
+6,Band Width,12.5K
+7,CTCSS/DCS Decode,Off
+8,CTCSS/DCS Encode,Off
+9,Contact/Talk Group,
+10,Contact/Talk Group Call Type,Group Call
+11,Contact/Talk Group TG/DMR ID,0
+12,Radio ID,DMR ID
+13,Busy Lock/TX Permit,Same Color Code
+14,Squelch Mode,Carrier
+15,Optional Signal,Off
+16,DTMF ID,1
+17,2Tone ID,1
+18,5Tone ID,1
+19,PTT ID,Off
+20,RX Color Code,0
+21,Slot,1
+22,Scan List,REQUIRED
+23,Receive Group List,None
+24,PTT Prohibit,Off
+25,Reverse,Off
+26,Digital Duplex,Off
+27,Slot Suit,Off
+28,AES Digital Encryption,Normal Encryption
+29,Digital Encryption,Off
+30,Call Confirmation,Off
+31,Talk Around(Simplex),Off
+32,Work Alone,Off
+33,Custom CTCSS,0.0
+34,2TONE Decode,1
+35,Ranging,Off
+36,Idle TX,Off
+37,APRS RX,Off
+38,Analog APRS PTT Mode,Off
+39,Digital APRS PTT Mode,Off
+40,APRS Report Type,Off
+41,Digital APRS Report Channel,1
+42,Correct Frequency[Hz],0
+43,SMS Confirmation,Off
+44,Exclude channel from roaming,0
+45,DMR MODE,0
+46,DataACK Disable,0
+47,R5toneBot,0
+48,R5ToneEot,0
+49,Auto Scan,0
+50,Ana APRS Mute,0
+51,Send Talker Alias DMR/NX,0
+52,AnaAprsTxPath,0
+53,ARC4,0
+54,ex_emg_kind,0
+55,Rpga_Mdc,0
+56,DisturEn,0
+57,DisturFreq,0
+58,dmr_crc_ignore,0
+59,compand,0
+60,tx_talkalaes,0
+61,dup_call,0
+62,tx_int,0
+63,BtRxState,0
+64,idle_tx,0
+65,nxdn_wn,0
+66,NxdnRpga,0
+67,nxdnSqCon,0
+68,NxdnTxBusy,0
+69,NxDnPttId,0
+70,EnRan,0
+71,DeRan,0
+72,NxdnEncry,0
+73,NxdnGroupId,0
+74,NxdnIdNum,0
+75,NxdnStateNum,0
+76,txcc,1

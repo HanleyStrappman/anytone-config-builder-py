@@ -15,9 +15,9 @@ python3 tests/test_args_regression.py
 
 | Script | What it covers |
 | --- | --- |
-| `test_output_regression.py` | The four generated CSVs on the real PNW inputs, across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
+| `test_output_regression.py` | The four generated CSVs on the real PNW inputs, for all three radios across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
 | `test_error_regression.py` | 35 malformed-input cases — bad headers, out-of-range and non-member field values, over-long names, unknown talkgroups, missing files. |
-| `test_args_regression.py` | Command-line handling: unknown options, stray positionals, `--`, option abbreviation, missing required arguments. |
+| `test_args_regression.py` | Command-line handling: unknown options, stray positionals, `--`, option abbreviation, `--radio`, missing required arguments. |
 
 ## Re-recording
 
@@ -41,11 +41,12 @@ with the `Text::CSV_XS` shim that let it run here.
 ## Layout
 
 - `golden/outputs.json` — exit status, messages and a SHA-256 per generated file,
-  for each of the 30 flag combinations.
-- `golden/default/` — full copies of the four CSVs for the default combination
-  (`alpha` / `off` / `same-color-code`), so a digest mismatch can be turned into a
-  readable diff instead of two hex strings. The other 29 are compared by digest
-  only; keeping them all in full would cost about 28MB of near-identical CSVs.
+  for each radio crossed with each of the 30 flag combinations.
+- `golden/default/<radio>/` — full copies of the four CSVs for each radio's
+  default combination (`alpha` / `off` / `same-color-code`), so a
+  digest mismatch can be turned into a readable diff instead of two hex strings.
+  The rest are compared by digest only; keeping them all in full would cost tens
+  of MB of near-identical CSVs.
 - `golden/errors.json`, `golden/args.json` — exit status and messages per case.
 - `fixtures/` — the smallest input set that still exercises all three readers,
   used as the starting point the error cases mutate.
@@ -74,6 +75,18 @@ that is removed afterwards.
   if you care whether anything was cut.
 
 - **Errors go to stderr**, warnings to stdout. The Perl printed both to stdout.
+
+- **`--radio` selects the CPS layout**, under the same four file names in every
+  case. `uv878` is what the Perl wrote; `uv878ii` (55 channel columns) and
+  `uv890` (77) add a trailing `Zone Hide`, drop `Country` and `Remarks` from
+  talkgroups, and pad frequencies to five decimals. The `uv878ii` and `uv890`
+  goldens were checked against real CPS exports: all four headers match, and
+  every mapped column carries the same value as the verified `uv878` build.
+
+- **Scanlist rows fill all 18 columns, for both radios.** The Perl emitted 12
+  values under an 18-column header, misaligning everything from `Priority
+  Channel 1` and dropping `Dwell Time[s]`. The replacement values come from UV878
+  and UV890 exports, which agree.
 
 - **Getopt::Long's argument habits are reproduced deliberately**: an unknown
   option warns `Unknown option: <name>` on stderr and then prints usage; stray
