@@ -1,7 +1,7 @@
 Zone,Channel Name,Frequency
-Air Zone 1,Pulllman Unicom,122.8
-Air Zone 1,ASOS,135.675
-Air Zone 1,Seattle RDO,122.6
-Air Zone 1,Seattle Center,123.95
-AM Zone 2,Pulllman Unicom,122.8
-AM Zone 2,ASOS,135.675
+ Pullman,Pulllman Unicom,122.8
+Pullman,ASOS,135.675
+Pullman,Seattle RCO,122.6
+Pullman,Seattle S8,123.95
+Seattle,Seattle S1,120.3
+Seattle,Seattle S31,127.05
