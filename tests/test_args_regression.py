@@ -30,10 +30,9 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _golden import (FIXTURES, REPO, compare, digests, load, report, run, save,
-                     updating)
+from _golden import (CONFIG, FIXTURES, REPO, compare, digests, load, report, run,
+                     save, updating)
 
-CONFIG = os.path.join(REPO, "config")
 
 
 def valid(indir):
@@ -82,8 +81,8 @@ indir = os.path.join(work, "in")
 shutil.copytree(FIXTURES, indir)
 
 # Everything runs from the temp directory, which deliberately has no "config"
-# subdirectory: that is what makes the no-config-flag case mean the same thing
-# regardless of where the test was launched from.
+# subdirectory: that is what makes the no-config-flag case prove the defaults
+# ship with the package, rather than proving the cwd happened to have a copy.
 CWD = work
 
 actual = {}

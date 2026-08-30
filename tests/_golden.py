@@ -32,7 +32,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-BUILDER = os.path.join(REPO, "anytone_config_builder.py")
+BUILDER = os.path.join(REPO, "anytone_config_builder", "builder.py")
+CONFIG = os.path.join(REPO, "anytone_config_builder", "config")
 FIXTURES = os.path.join(HERE, "fixtures")
 GOLDEN = os.path.join(HERE, "golden")
 
@@ -68,7 +69,7 @@ def build_args(indir, outdir, extra=(), config=None):
              "digital-repeaters": f"{indir}/repeaters.csv",
              "talkgroups": f"{indir}/talkgroups.csv"}
     return [f"--{flag}-csv={path}" for flag, path in names.items()] + [
-        f"--config={config or os.path.join(REPO, 'config')}",
+        f"--config={config or CONFIG}",
         f"--output-directory={outdir}",
     ] + list(extra)
 
@@ -76,9 +77,9 @@ def build_args(indir, outdir, extra=(), config=None):
 def run(args, replacements, cwd=None):
     """Run the builder and return its exit status and scrubbed combined output.
 
-    Pass `cwd` for anything that leans on a relative path -- without --config the
-    builder looks for a directory literally named "config" next to wherever it was
-    invoked, so the result would otherwise depend on where you ran the test from.
+    Pass `cwd` for anything that leans on a relative path -- the input and output
+    paths a case builds are relative unless it says otherwise, so the result would
+    otherwise depend on where you ran the test from.
     """
     p = subprocess.run([sys.executable, BUILDER] + args,
                        capture_output=True, text=True, cwd=cwd)

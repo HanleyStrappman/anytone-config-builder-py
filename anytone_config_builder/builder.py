@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import os
 import re
 import sys
 from functools import cmp_to_key
@@ -67,7 +68,7 @@ ACB_ZONE_NICKNAME = 1000
 
 VAL_DIGITAL = "D-Digital"
 VAL_ANALOG = "A-Analog"
-VAL_NO_TIME_SLOT = "-"  # this is from the input CSV, not a Anytone-ism
+VAL_NO_TIME_SLOT = "-"  # this is from the input CSV, not an Anytone-ism
 VAL_TX_PERMIT_FREE = "ChannelFree"
 VAL_TX_PERMIT_SAME = "Same Color Code"
 VAL_TX_PERMIT_ALWAYS = "Always"
@@ -1171,6 +1172,16 @@ def usage():
     sys.exit(255)
 
 
+def default_config_directory():
+    """The channel-defaults directory used when --config is not given.
+
+    The four files ship with the package, so this resolves beside this module
+    rather than beside the caller: an installed copy run from anywhere finds
+    them, and a checkout finds the same ones it always did.
+    """
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
+
+
 def handle_command_line_args(argv):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--analog-csv")
@@ -1213,7 +1224,7 @@ def handle_command_line_args(argv):
         usage()
 
     if args.config is None:
-        args.config = "config"
+        args.config = default_config_directory()
 
     return args
 
@@ -1236,9 +1247,14 @@ def main(argv=None):
     return 0
 
 
-if __name__ == "__main__":
+def cli(argv=None):
+    """main() with the top-level error handling, for the console script."""
     try:
-        sys.exit(main())
+        return main(argv)
     except ConfigError as exc:
         report_error(str(exc))
-        sys.exit(255)
+        return 255
+
+
+if __name__ == "__main__":
+    sys.exit(cli())

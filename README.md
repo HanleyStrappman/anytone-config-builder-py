@@ -15,17 +15,39 @@ where the two diverge.
 
 ## Requirements
 
-Python 3 and nothing else — no pip install, no virtualenv. (The Perl original
-needed `Text::CSV_XS`.)
+Python 3 and nothing else — no third-party packages at any version. (The Perl
+original needed `Text::CSV_XS`.)
+
+## Install
+
+Optional: a checkout runs without installing anything.
+
+```sh
+pip install .                    # from a checkout
+pip install dist/anytone_config_builder-*.whl
+```
+
+Either puts `anytone-config-builder` (and the shorter alias `acb`) on your PATH,
+and carries the channel-defaults files along with it, so an installed copy needs
+no `--config` and works from any directory. To build the distribution yourself:
+
+```sh
+python -m build          # writes dist/*.whl and dist/*.tar.gz
+```
 
 ## Usage
 
 The output directory must already exist; the builder will not create it.
 
+Installed, the command is `acb`. From a checkout it is
+`python -m anytone_config_builder`, or `anytone_config_builder/builder.py`
+directly — the three take identical arguments, and the rest of this README
+writes `acb`.
+
 ```sh
 mkdir -p output
 
-./anytone_config_builder.py \
+acb \
     --analog-csv=Analog__PNW-Community-260307.csv \
     --digital-others-csv=Digital-Others__PNW-Community-200926.csv \
     --digital-repeaters-csv=Digital-Repeaters__PNW-all-2026-08-29.csv \
@@ -49,7 +71,7 @@ ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On l
 | `--talkgroups-csv` | *required* | Talkgroup names and IDs. |
 | `--am-air-csv` | *optional* | AM airband channels. Only format `3` reads the result. |
 | `--output-directory` | *required* | Where the output files are written. Must exist. |
-| `--config` | `config` | Directory holding the channel defaults files. |
+| `--config` | *packaged* | Directory holding the channel defaults files. Defaults to the copy inside the package. |
 | `--sorting` | `alpha` | `alpha`, `repeaters-first`, or `analog-first`. |
 | `--nicknames` | `prefix` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
 | `--hotspot-tx-permit` | `same-color-code` | `same-color-code` or `always`. |
@@ -230,8 +252,10 @@ The CPS caps a scanlist at 50 channels and a zone at 250. Anything longer is
 truncated with a warning on stdout.
 
 The `--config` directory supplies the value for every CPS field the inputs don't
-mention, in a file per CPS format. Edit it to change defaults across all
-generated channels.
+mention, in a file per CPS format. It defaults to `anytone_config_builder/config`
+inside the package, wherever that package happens to live. To change defaults
+across all generated channels, either edit the packaged files in a checkout or
+copy the directory somewhere and point `--config` at it.
 
 ## Before importing into the CPS
 

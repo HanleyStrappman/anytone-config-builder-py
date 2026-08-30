@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "anytone-config-builder"
+dynamic = ["version"]
+description = "Builds Anytone CPS import files from readable CSV inputs"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE.md"]
+authors = [{ name = "Scott Robinson (AG7T)", email = "sgr@nwlink.com" }]
+keywords = ["anytone", "dmr", "codeplug", "amateur-radio", "ham-radio", "cps"]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Topic :: Communications :: Ham Radio",
+]
+
+# Stdlib only, on purpose -- see README.
+dependencies = []
+
+[project.scripts]
+anytone-config-builder = "anytone_config_builder.builder:cli"
+acb = "anytone_config_builder.builder:cli"
+
+[tool.hatch.version]
+path = "anytone_config_builder/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["anytone_config_builder"]
+
+# The sdist carries the package and its docs, not the test suite: tests/golden
+# is 4MB of recorded output, and the regression tests read the working PNW CSVs
+# from the repo root, so they only mean anything in a checkout.
+[tool.hatch.build.targets.sdist]
+include = [
+    "/anytone_config_builder",
+    "/pyproject.toml",
+    "/README.md",
+    "/LICENSE.md",
+]

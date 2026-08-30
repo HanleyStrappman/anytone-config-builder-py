@@ -111,7 +111,7 @@
   "double-dash": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
   },
   "empty-config-value": {
     "exit": 255,
@@ -121,22 +121,27 @@
   "missing-analog-arg": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
   },
   "missing-outdir": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
   },
   "no-args": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\n"
   },
   "no-config-flag": {
-    "exit": 255,
-    "files": {},
-    "output": "ERROR: Couldn't open file 'config/channel-defaults-1.csv': No such file or directory\n"
+    "exit": 0,
+    "files": {
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "750474f037166940cd0f44694b6763e0c6dd06e2ddb801eda0075f369fd6c200"
+    },
+    "output": ""
   },
   "space-separated": {
     "exit": 0,
@@ -171,21 +176,21 @@
   "unknown-long": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: bogus\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: bogus\n"
   },
   "unknown-short": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: x\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: x\n"
   },
   "unknown-uppercase": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: bogus\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: bogus\n"
   },
   "unknown-with-value": {
     "exit": 255,
     "files": {},
-    "output": "<repo>/anytone_config_builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: bogus\n"
+    "output": "<repo>/anytone_config_builder/builder.py \narguments:\n  --analog-csv=<analog.csv>  \n  --digital-others-csv=<digital-others.csv>\n  --digital-repeaters-csv=<digital_repeaters.csv> \n  --talkgroups-csv=<talkgroups.csv> \n  --output-directory=<output-directory>\n  [--am-air-csv=<airband.csv>]\n  [--config=<config file>]\n  [--sorting=(alpha|repeaters-first|analog-first)]\n  [--hotspot-tx-permit=(always|same-color-code)]\n  [--nicknames=(off|prefix|suffix)]\n  [--cps-format=(0|1|2|3)]\nUnknown option: bogus\n"
   }
 }

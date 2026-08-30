@@ -38,8 +38,8 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _golden import (FIXTURES, GOLDEN, REAL_INPUTS, REPO, compare, digests, load,
-                     outputs, report, run, save, updating)
+from _golden import (CONFIG, FIXTURES, GOLDEN, REAL_INPUTS, REPO, compare, digests,
+                     load, outputs, report, run, save, updating)
 
 FORMATS = ("0", "1", "2", "3")
 DEFAULT_COMBO = "alpha.prefix.same-color-code"
@@ -64,7 +64,7 @@ AIRBAND = os.path.join(FIXTURES, "airband.csv")
 def real_args(outdir, extra):
     args = [f"--{flag}-csv={os.path.join(REPO, name)}"
             for flag, name in REAL_INPUTS.items()]
-    return args + [f"--config={os.path.join(REPO, 'config')}",
+    return args + [f"--config={CONFIG}",
                    f"--output-directory={outdir}"] + list(extra)
 
 

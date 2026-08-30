@@ -1,6 +1,6 @@
 # Regression tests
 
-Golden-file tests for `anytone_config_builder.py`. Each one runs the builder and
+Golden-file tests for `anytone_config_builder/builder.py`. Each one runs the builder and
 compares its exit status, its messages, and the files it generates against
 recorded results under `golden/`.
 

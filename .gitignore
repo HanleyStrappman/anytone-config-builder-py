@@ -14,3 +14,7 @@ US_Contacts.csv
 /uv*/
 
 __pycache__/
+
+# Distribution build output
+/dist/
+*.egg-info/
