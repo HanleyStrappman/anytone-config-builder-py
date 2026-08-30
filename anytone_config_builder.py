@@ -28,6 +28,9 @@ Reads the analog, digital-other and digital-repeater channel CSVs (plus a
 talkgroup CSV and a channel-defaults config file) and writes the four channel,
 zone, scanlist and talkgroup files that the Anytone CPS software imports.  What
 those four are called depends on the CPS -- see OUTPUT_FILES.
+
+An optional airband CSV adds the AM_FILES pair on top, for the one CPS that
+reads them.
 """
 
 from __future__ import annotations
@@ -119,11 +122,19 @@ OUTPUT_FILES = {"channels": "channels.csv", "zones": "zones.csv",
 
 # AT-D890UV CPS 1.05 handles the AM airband as well as DMR, and keeps the two
 # apart by name: its DMR zones and talkgroups take the prefix, leaving AMZone.CSV
-# and AMAir.CSV for the airband.  Those two need frequencies none of the input
-# files carry, so this builder does not write them -- the CPS keeps whatever the
-# radio already holds.
+# and AMAir.CSV for the airband -- see AM_FILES.
 FORMAT_3_FILES = {"channels": "Channel.CSV", "zones": "DMRZones.CSV",
                   "scanlists": "ScanList.CSV", "talkgroups": "DMRTalkGroups.CSV"}
+
+# The airband pair, written only when --am-air-csv supplies something to put in
+# them.  Unlike the four above these have no per-format variants, because only
+# one CPS reads them at all -- so they are a constant rather than a format field.
+AM_FILES = {"am_air": "AMAir.CSV", "am_zones": "AMZone.CSV"}
+
+# The airband channel table is a flat list the zones then name.  Its frequencies
+# carry four decimals, where the DMR side of the same CPS uses five.
+AM_FREQ_DECIMALS = 4
+LENGTH_AM_NAME = 16
 
 
 class CpsFormat:
@@ -131,7 +142,7 @@ class CpsFormat:
 
     def __init__(self, name, defaults, columns=None, freq_decimals=None,
                  zone_hide=False, talkgroup_notes=True, member_freqs=True,
-                 files=None):
+                 files=None, airband=False):
         self.name = name
         self.defaults = defaults            # channel defaults file, inside --config
         self.columns = columns              # output column -> internal CHAN_* field
@@ -141,6 +152,8 @@ class CpsFormat:
         self.member_freqs = member_freqs    # RX/TX frequency columns beside each
                                             # channel named in zones and scanlists
         self.files = files or OUTPUT_FILES  # what this CPS calls the four outputs
+        self.airband = airband              # whether this CPS reads AM_FILES at all;
+                                            # gates the warning, not the writing
 
     def field_for_column(self, column):
         """Which internal field feeds this output column, or None for a default.
@@ -223,6 +236,7 @@ CPS_FORMATS = {
         zone_hide=True,
         talkgroup_notes=False,
         files=FORMAT_3_FILES,
+        airband=True,
     ),
 }
 
@@ -432,9 +446,12 @@ class ConfigBuilder:
         self.analog_channel_index = 0
         self.scanlist_config = {}
         self.talkgroup_config = {}
+        self.am_air = {}          # airband channel name -> frequency, first seen first
+        self.am_zone_config = {}  # airband zone name -> its channel names, in order
 
     def run(self, analog_filename, digital_others_filename, digital_repeaters_filename,
-            talkgroups_filename, config_directory, output_directory):
+            talkgroups_filename, config_directory, output_directory,
+            airband_filename=None):
         files = self.cps_format.files
 
         self.read_talkgroups(talkgroups_filename)
@@ -456,6 +473,20 @@ class ConfigBuilder:
         self.write_zone_file(f"{output_directory}/{files['zones']}")
         self.write_scanlist_file(f"{output_directory}/{files['scanlists']}")
         self.write_talkgroup_file(f"{output_directory}/{files['talkgroups']}")
+
+        # Airband is optional, and its absence is the normal case -- without it the
+        # CPS simply keeps whatever airband channels the radio already holds.
+        if airband_filename is not None:
+            self.read_airband_file(airband_filename)
+            self.write_am_air_file(f"{output_directory}/{AM_FILES['am_air']}")
+            self.write_am_zone_file(f"{output_directory}/{AM_FILES['am_zones']}")
+
+            if not self.cps_format.airband:
+                warning(f"The airband files are only read by AT-D890UV CPS 1.05, which "
+                        f"is --cps-format=3. {AM_FILES['am_air']} and "
+                        f"{AM_FILES['am_zones']} have been written, but the CPS that "
+                        f"--cps-format={self.cps_format.name} targets will not import "
+                        f"them.")
 
     ############################################################################
     ##########   CSV OUTPUT ROUTINES
@@ -510,6 +541,35 @@ class ConfigBuilder:
 
         self.generate_csv_file(filename, headers, self.talkgroup_config,
                                self.talkgroup_row_builder, case_insensitive_key)
+
+    #####
+    ##### Airband file output #####
+    #####
+    def write_am_air_file(self, filename):
+        """The flat airband channel table: every channel any AM zone names."""
+        self.generate_csv_file(filename, ["No.", "Frequency[MHz]", "Name"],
+                               self.am_air, self.am_air_row_builder,
+                               list(self.am_air).index)
+
+    def write_am_zone_file(self, filename):
+        # "Scan Channel " really does carry that trailing space, the same way
+        # "Zone Hide " does on the DMR zones.
+        self.generate_csv_file(filename,
+                               ["No.", "Zone Name", "Zone Channel Member",
+                                "A Channel", "Scan Channel "],
+                               self.am_zone_config, self.am_zone_row_builder,
+                               case_insensitive_key)
+
+    def am_air_row_builder(self, air_number, chan_name, frequency):
+        return [air_number, frequency, chan_name]
+
+    def am_zone_row_builder(self, zone_number, zone_name, channels):
+        # Unlike a DMR zone, there is no B channel to mirror: the airband receiver
+        # is picked on the radio ("AM Mode A" / "AM Mode B"), so this lone column
+        # is the zone's default channel rather than one receiver's.  Scan Channel
+        # is left unset, as the CPS itself exports it.
+        return [zone_number, zone_name, "|".join(channels),
+                channels[0] if channels else "", ""]
 
     def zone_row_builder(self, zone_number, zone_name, zone_record):
         def details(values, channel0, rx0, tx0):
@@ -745,6 +805,57 @@ class ConfigBuilder:
                 index = int(perl_num(row[0]))
                 self.channel_csv_field_name[index] = row[1]
                 self.channel_csv_default_value[index] = row[2]
+
+    def read_airband_file(self, filename):
+        """Read the airband input into the flat channel table and its zones.
+
+        Deliberately not process_csv_file_with_header(): that one is welded to the
+        channel pipeline, and an airband channel is in no zone, scanlist or
+        talkgroup that pipeline builds.  The header check matches it, though.
+
+        One row per channel per zone.  A name in two zones is one airband channel
+        with two memberships, not two channels -- which is the one way this file
+        differs from the analog one, where a repeat means a second channel.
+        """
+        header = ["Zone", "Channel Name", "Frequency"]
+        saved = (self.file_name, self.line_number)
+        self.file_name = "Airband"
+
+        try:
+            with open_csv_read(filename) as fh:
+                for line_no, row in enumerate(csv.reader(fh)):
+                    if not row:
+                        continue
+                    self.line_number = line_no
+
+                    if line_no == 0:
+                        for col in range(len(header)):
+                            found = row[col] if col < len(row) else ""
+                            if found != header[col]:
+                                raise ConfigError(
+                                    f"CSV header does not match for Airband file "
+                                    f"(found '{found}' expected '{header[col]}')\n")
+                        continue
+
+                    ctx = self._file_and_line()
+                    zone = validate_zone(row[0], ctx)
+                    name = _validate_string_length("Airband Channel Name", row[1],
+                                                   LENGTH_AM_NAME, ctx)
+                    freq = f"{float(validate_freq(row[2], ctx)):.{AM_FREQ_DECIMALS}f}"
+
+                    # The table is keyed by name, so one name cannot hold two
+                    # frequencies -- that has to be the input being wrong.
+                    if self.am_air.setdefault(name, freq) != freq:
+                        raise ConfigError(
+                            f"Airband channel '{name}' is {self.am_air[name]} MHz "
+                            f"elsewhere, but {freq} MHz here. One name cannot be two "
+                            f"frequencies." + ctx)
+
+                    members = self.am_zone_config.setdefault(zone, [])
+                    if name not in members:
+                        members.append(name)
+        finally:
+            self.file_name, self.line_number = saved
 
     def read_talkgroups(self, filename):
         # Key on the same shortened form validate_contact() produces downstream.
@@ -1051,6 +1162,7 @@ def usage():
     print("  --digital-repeaters-csv=<digital_repeaters.csv> ")
     print("  --talkgroups-csv=<talkgroups.csv> ")
     print("  --output-directory=<output-directory>")
+    print("  [--am-air-csv=<airband.csv>]")
     print("  [--config=<config file>]")
     print("  [--sorting=(alpha|repeaters-first|analog-first)]")
     print("  [--hotspot-tx-permit=(always|same-color-code)]")
@@ -1065,6 +1177,7 @@ def handle_command_line_args(argv):
     parser.add_argument("--digital-others-csv")
     parser.add_argument("--digital-repeaters-csv")
     parser.add_argument("--talkgroups-csv")
+    parser.add_argument("--am-air-csv")
     parser.add_argument("--config")
     parser.add_argument("--output-directory")
     parser.add_argument("--sorting", default="alpha")
@@ -1117,7 +1230,8 @@ def main(argv=None):
         builder.zone_order_default = 0
 
     builder.run(args.analog_csv, args.digital_others_csv, args.digital_repeaters_csv,
-                args.talkgroups_csv, args.config, args.output_directory)
+                args.talkgroups_csv, args.config, args.output_directory,
+                airband_filename=args.am_air_csv)
 
     return 0
 

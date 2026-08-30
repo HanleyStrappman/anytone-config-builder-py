@@ -47,7 +47,8 @@ ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On l
 | `--digital-others-csv` | *required* | One-off DMR channels. |
 | `--digital-repeaters-csv` | *required* | The repeater × talkgroup matrix. |
 | `--talkgroups-csv` | *required* | Talkgroup names and IDs. |
-| `--output-directory` | *required* | Where the four output files are written. Must exist. |
+| `--am-air-csv` | *optional* | AM airband channels. Only format `3` reads the result. |
+| `--output-directory` | *required* | Where the output files are written. Must exist. |
 | `--config` | `config` | Directory holding the channel defaults files. |
 | `--sorting` | `alpha` | `alpha`, `repeaters-first`, or `analog-first`. |
 | `--nicknames` | `prefix` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
@@ -77,6 +78,7 @@ only in contents; format `3` writes the names AT-D890UV CPS 1.05 uses.
 | Talkgroup file | `talkgroups.csv`, 5 columns | `talkgroups.csv`, 7 | `talkgroups.csv`, 5 | `DMRTalkGroups.CSV`, 5 |
 | Scanlist file | `scanlists.csv`, 12 columns | `scanlists.csv`, 18 | `scanlists.csv`, 18 | `ScanList.CSV`, 18 |
 | Frequencies | five decimals | as written in the input | five decimals | five decimals |
+| Airband | not read | not read | not read | `AMAir.CSV`, `AMZone.CSV` |
 
 The numbers run oldest CPS to newest, and each is a fixed identifier — a format
 discovered later is appended rather than slotted in. **Format `1` is the default
@@ -99,8 +101,13 @@ talkgroups.
 Format `3` is also the only one whose file names differ, because CPS 1.05 handles
 the AM airband alongside DMR and keeps the two apart by name: the DMR zones and
 talkgroups take the prefix, leaving `AMZone.CSV` and `AMAir.CSV` for the airband.
-Those two need frequencies none of the input files carry, so this tool does not
-write them and the CPS keeps whatever the radio already holds.
+Those two are written only when `--am-air-csv` gives them something to hold —
+without it neither file appears and the CPS keeps whatever airband channels the
+radio already has.
+
+Any format will write the airband pair if asked, since the pair has only one
+shape; passing `--am-air-csv` to formats `0` to `2` warns that the CPS those
+target will not read them, but still builds everything.
 
 One AT-D878UV shows why this is a CPS property and not a radio one: exported
 from two CPS versions, its channel file came out 52 columns wide from the older
@@ -141,8 +148,8 @@ collapse onto a hundred-odd names and the CPS has no way to tell them apart.
 
 ## Input files
 
-Plain ASCII CSV, editable in any spreadsheet. The four files in the repo root
-are a working PNW set you can copy and adapt.
+Plain ASCII CSV, editable in any spreadsheet. The files in the repo root are a
+working PNW set you can copy and adapt.
 
 ### Analog
 
@@ -186,11 +193,27 @@ adding a repeater means adding one row.
 Two columns, no header: the talkgroup name and its numeric ID. Names must match
 the ones used in the two DMR files above.
 
+### Airband
+
+`Zone, Channel Name, Frequency`
+
+Optional, and passed with `--am-air-csv`. `Airband__PNW.csv` in the repo root is
+a starting point to fill in.
+
+- **Zone**, **Channel Name** — up to 16 characters
+- **Frequency** — MHz, written out to four decimals
+
+One row per channel *per zone*. Unlike the analog file, a channel name repeated
+across zones is **one** airband channel with two memberships, not two channels —
+the radio keeps a single flat airband table that the zones then name. The same
+name at two different frequencies is an error, since one table entry cannot be
+both.
+
 ## Output
 
-Four files, ready to import. The names below are what formats `0` to `2` write;
-format `3` writes the same four as `Channel.CSV`, `DMRZones.CSV`, `ScanList.CSV`
-and `DMRTalkGroups.CSV`.
+Four files, ready to import — plus two more when `--am-air-csv` is given. The
+names below are what formats `0` to `2` write; format `3` writes the same four as
+`Channel.CSV`, `DMRZones.CSV`, `ScanList.CSV` and `DMRTalkGroups.CSV`.
 
 - `channels.csv` — one channel per row in the analog and digital-others files,
   plus one per repeater/talkgroup pair from the matrix
@@ -200,6 +223,8 @@ and `DMRTalkGroups.CSV`.
   one per *talkgroup* from the repeaters file, so hitting scan while listening
   to a talkgroup sweeps that talkgroup across every repeater carrying it
 - `talkgroups.csv` — the talkgroup list
+- `AMAir.CSV`, `AMZone.CSV` — the airband channel table and the zones over it,
+  only when `--am-air-csv` is given. Same name whichever format is chosen.
 
 The CPS caps a scanlist at 50 channels and a zone at 250. Anything longer is
 truncated with a warning on stdout.

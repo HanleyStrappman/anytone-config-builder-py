@@ -15,13 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <https://www.gnu.org/licenses/>.
-"""Regression test: the four generated CSVs, over the whole flag matrix.
+"""Regression test: the generated CSVs, over the whole flag matrix.
 
 Runs the builder on the real PNW inputs in the repo root -- as they are, with the
 over-long zone name still in them -- for every supported CPS format crossed with
 all 30 combinations of --sorting, --nicknames and --hotspot-tx-permit, and checks
 exit status, messages and the content of every generated file against the
-recorded goldens.
+recorded goldens.  Each format also gets one --am-air-csv case on top, for the
+optional airband pair.
 
 Full copies of each format's default combination are kept under golden/default/
 so there is something to actually read a diff against; the rest are compared by
@@ -37,8 +38,8 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _golden import (GOLDEN, REAL_INPUTS, REPO, compare, digests, load, outputs,
-                     report, run, save, updating)
+from _golden import (FIXTURES, GOLDEN, REAL_INPUTS, REPO, compare, digests, load,
+                     outputs, report, run, save, updating)
 
 FORMATS = ("0", "1", "2", "3")
 DEFAULT_COMBO = "alpha.prefix.same-color-code"
@@ -49,6 +50,15 @@ COMBOS = [(f, s, n, h)
           for s in ("alpha", "repeaters-first", "analog-first")
           for n in ("off", "prefix", "suffix", "prefix-forced", "suffix-forced")
           for h in ("always", "same-color-code")]
+
+# Airband is a fifth, optional input, so it is a separate case per format rather
+# than another axis of the cross product above -- which keeps all 30 x 4 of those
+# goldens meaning exactly what they meant before airband existed.  Every format
+# writes the pair; 0, 1 and 2 also warn that their CPS will not read it.
+#
+# The fixture is used rather than the repo's Airband__PNW.csv, which ships as a
+# template to be filled in: replacing its contents should not churn these goldens.
+AIRBAND = os.path.join(FIXTURES, "airband.csv")
 
 
 def real_args(outdir, extra):
@@ -68,10 +78,25 @@ def record_combo(work, fmt, sort, nick, hot):
     return tag, outdir, {"exit": rc, "output": out, "files": digests(outdir)}
 
 
+def record_airband(work, fmt):
+    tag = f"{fmt}.airband"
+    outdir = os.path.join(work, tag)
+    os.makedirs(outdir)
+    extra = [f"--cps-format={fmt}", f"--am-air-csv={AIRBAND}"]
+    rc, out = run(real_args(outdir, extra),
+                  {REPO: "<repo>", outdir: "<out>", FIXTURES: "<fixtures>"})
+    return tag, outdir, {"exit": rc, "output": out, "files": digests(outdir)}
+
+
 work = tempfile.mkdtemp(prefix="acb-outreg-")
 actual, dirs = {}, {}
 for fmt, sort, nick, hot in COMBOS:
     tag, outdir, record = record_combo(work, fmt, sort, nick, hot)
+    actual[tag] = record
+    dirs[tag] = outdir
+
+for fmt in FORMATS:
+    tag, outdir, record = record_airband(work, fmt)
     actual[tag] = record
     dirs[tag] = outdir
 

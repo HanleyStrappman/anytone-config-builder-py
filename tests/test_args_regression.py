@@ -69,6 +69,11 @@ def cases(indir):
         "cps-format-3":       (v + ["--cps-format=3"], True),
         "cps-format-unknown": (v + ["--cps-format=9"], True),
         "abbrev-cps-format":  (v + ["--cps=3"], True),
+        # Airband is optional everywhere.  Format 3 reads it; the others still
+        # write the pair and warn, rather than refusing to build anything.
+        "am-air-format-3":    (v + ["--cps-format=3", f"--am-air-csv={indir}/airband.csv"], True),
+        "am-air-format-0":    (v + ["--cps-format=0", f"--am-air-csv={indir}/airband.csv"], True),
+        "am-air-missing":     (v + [f"--am-air-csv={indir}/nope.csv"], True),
     }
 
 

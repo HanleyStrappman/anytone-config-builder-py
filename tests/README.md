@@ -50,8 +50,11 @@ with the `Text::CSV_XS` shim that let it run here.
   The rest are compared by digest only; keeping them all in full would cost tens
   of MB of near-identical CSVs.
 - `golden/errors.json`, `golden/args.json` — exit status and messages per case.
-- `fixtures/` — the smallest input set that still exercises all three readers,
-  used as the starting point the error cases mutate.
+- `fixtures/` — the smallest input set that still exercises every reader, used as
+  the starting point the error cases mutate. `airband.csv` is deliberately not
+  wired into the 30-combination cross product: airband is an optional fifth input
+  with its own per-format cases, so those 120 goldens keep meaning exactly what
+  they meant before it existed.
 - `_golden.py` — shared plumbing: running the builder, scrubbing machine-specific
   paths out of its output, loading and saving goldens, reporting differences.
 

@@ -59,6 +59,10 @@ ANALOG_ROW = "APRS - Analog,146.500 aprs,25K,High,146.5,146.5,Off,Off,Off"
 OTHERS_ROW = "Simplex,Sim V01  145.790,High,145.79,145.79,1,Local 1,1,Group Call,Always"
 REPEATER_ROW = "Ariel/Ariel VHF;ARA,,High,147.4125,146.4125,1,1,2,1"
 
+# Format 3 is the one that actually reads the airband pair, so the airband cases
+# use it and their output is the airband error alone, not a format warning too.
+AIRBAND_ARGS = ["--cps-format=3", "--am-air-csv={case}/airband.csv"]
+
 CASES = [
     # ---- header validation ----
     ("hdr-analog-wrong",    edit("analog.csv", "Zone,Channel Name,Bandwidth", "Zone,Chanel Name,Bandwidth"), None),
@@ -109,6 +113,19 @@ CASES = [
     ("bad-hotspot",         None, ["--hotspot-tx-permit=maybe"]),
     ("bad-nicknames",       None, ["--nicknames=sometimes"]),
 
+    # ---- airband ----
+    # The only airband conditions that stop the run.  Handing the file to a format
+    # that cannot read it is a warning, not an error, and is covered in the args test.
+    ("airband-bad-header",  edit("airband.csv", "Zone,Channel Name,Frequency",
+                                 "Zone,Name,Frequency"), AIRBAND_ARGS),
+    ("airband-bad-freq",    edit("airband.csv", "ASOS,135.675", "ASOS,not-a-number"),
+                            AIRBAND_ARGS),
+    ("airband-freq-clash",  edit("airband.csv", "AM Zone 2,Pulllman Unicom,122.8",
+                                 "AM Zone 2,Pulllman Unicom,118.1"), AIRBAND_ARGS),
+    ("airband-long-name",   edit("airband.csv", "ASOS,135.675",
+                                 "ASOS Pullman Regional,135.675"), AIRBAND_ARGS),
+    ("airband-missing",     rm("airband.csv"), AIRBAND_ARGS),
+
     # ---- missing / unreadable files ----
     ("missing-analog",      rm("analog.csv"), None),
     ("missing-talkgroups",  rm("talkgroups.csv"), None),
@@ -124,7 +141,10 @@ def record(work, name, mutate, extra):
         mutate(case)
     outdir = os.path.join(case, "out")
     os.makedirs(outdir)
-    rc, out = run(build_args(case, outdir, extra or []),
+    # {case} lets a case point a flag at its own copy of the fixtures, which only
+    # exists once the copytree above has run.
+    args = [a.format(case=case) for a in (extra or [])]
+    rc, out = run(build_args(case, outdir, args),
                   {case: "<in>", REPO: "<repo>"})
     return {"exit": rc, "output": out, "files": digests(outdir)}
 
