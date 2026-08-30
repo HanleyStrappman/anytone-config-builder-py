@@ -18,12 +18,12 @@
 """Regression test: the four generated CSVs, over the whole flag matrix.
 
 Runs the builder on the real PNW inputs in the repo root -- as they are, with the
-over-long zone name still in them -- for every supported radio crossed with all
-30 combinations of --sorting, --nicknames and --hotspot-tx-permit, and checks
+over-long zone name still in them -- for every supported CPS format crossed with
+all 30 combinations of --sorting, --nicknames and --hotspot-tx-permit, and checks
 exit status, messages and the content of every generated file against the
 recorded goldens.
 
-Full copies of each radio's default combination are kept under golden/default/
+Full copies of each format's default combination are kept under golden/default/
 so there is something to actually read a diff against; the rest are compared by
 digest, which would otherwise cost tens of MB of near-identical CSVs.
 
@@ -40,12 +40,12 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _golden import (GOLDEN, OUTPUTS, REAL_INPUTS, REPO, compare, digests, load,
                      report, run, save, updating)
 
-RADIOS = ("uv878", "uv878ii", "uv890")
+FORMATS = ("0", "1", "2", "3")
 DEFAULT_COMBO = "alpha.off.same-color-code"
 FULL_COPIES = os.path.join(GOLDEN, "default")
 
-COMBOS = [(r, s, n, h)
-          for r in RADIOS
+COMBOS = [(f, s, n, h)
+          for f in FORMATS
           for s in ("alpha", "repeaters-first", "analog-first")
           for n in ("off", "prefix", "suffix", "prefix-forced", "suffix-forced")
           for h in ("always", "same-color-code")]
@@ -58,11 +58,11 @@ def real_args(outdir, extra):
                    f"--output-directory={outdir}"] + list(extra)
 
 
-def record_combo(work, radio, sort, nick, hot):
-    tag = f"{radio}.{sort}.{nick}.{hot}"
+def record_combo(work, fmt, sort, nick, hot):
+    tag = f"{fmt}.{sort}.{nick}.{hot}"
     outdir = os.path.join(work, tag)
     os.makedirs(outdir)
-    extra = [f"--radio={radio}", f"--sorting={sort}",
+    extra = [f"--cps-format={fmt}", f"--sorting={sort}",
              f"--nicknames={nick}", f"--hotspot-tx-permit={hot}"]
     rc, out = run(real_args(outdir, extra), {REPO: "<repo>", outdir: "<out>"})
     return tag, outdir, {"exit": rc, "output": out, "files": digests(outdir)}
@@ -70,19 +70,19 @@ def record_combo(work, radio, sort, nick, hot):
 
 work = tempfile.mkdtemp(prefix="acb-outreg-")
 actual, dirs = {}, {}
-for radio, sort, nick, hot in COMBOS:
-    tag, outdir, record = record_combo(work, radio, sort, nick, hot)
+for fmt, sort, nick, hot in COMBOS:
+    tag, outdir, record = record_combo(work, fmt, sort, nick, hot)
     actual[tag] = record
     dirs[tag] = outdir
 
 if updating():
     save("outputs.json", actual)
     shutil.rmtree(FULL_COPIES, ignore_errors=True)
-    for radio in RADIOS:
-        into = os.path.join(FULL_COPIES, radio)
+    for fmt in FORMATS:
+        into = os.path.join(FULL_COPIES, fmt)
         os.makedirs(into)
         for name in OUTPUTS:
-            shutil.copy(os.path.join(dirs[f"{radio}.{DEFAULT_COMBO}"], name), into)
+            shutil.copy(os.path.join(dirs[f"{fmt}.{DEFAULT_COMBO}"], name), into)
         print(f"recorded {len(OUTPUTS)} full files under "
               f"{os.path.relpath(into, REPO)} ({DEFAULT_COMBO})")
     shutil.rmtree(work, ignore_errors=True)
@@ -98,18 +98,18 @@ for tag in sorted(actual):
 
 # The default combination is also held as full files, so a digest mismatch there
 # can be turned into a readable diff instead of two hex strings.
-for radio in RADIOS:
+for fmt in FORMATS:
     for name in OUTPUTS:
-        golden_file = os.path.join(FULL_COPIES, radio, name)
-        fresh = os.path.join(dirs[f"{radio}.{DEFAULT_COMBO}"], name)
+        golden_file = os.path.join(FULL_COPIES, fmt, name)
+        fresh = os.path.join(dirs[f"{fmt}.{DEFAULT_COMBO}"], name)
         if not os.path.exists(golden_file):
-            results.append((f"default/{radio}/{name}", ["no full copy recorded"]))
+            results.append((f"default/{fmt}/{name}", ["no full copy recorded"]))
         elif not filecmp.cmp(golden_file, fresh, shallow=False):
-            results.append((f"default/{radio}/{name}",
+            results.append((f"default/{fmt}/{name}",
                             [f"differs from {os.path.relpath(golden_file, REPO)}; "
                              f"diff it against {fresh}"]))
         else:
-            results.append((f"default/{radio}/{name}", []))
+            results.append((f"default/{fmt}/{name}", []))
 
 code = report(results, "flag combinations")
 shutil.rmtree(work, ignore_errors=True)

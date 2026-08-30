@@ -49,11 +49,11 @@ ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On l
 | `--digital-repeaters-csv` | *required* | The repeater × talkgroup matrix. |
 | `--talkgroups-csv` | *required* | Talkgroup names and IDs. |
 | `--output-directory` | *required* | Where the four output files are written. Must exist. |
-| `--config` | `config` | Directory holding `channel-defaults.csv`. |
+| `--config` | `config` | Directory holding the channel defaults files. |
 | `--sorting` | `alpha` | `alpha`, `repeaters-first`, or `analog-first`. |
 | `--nicknames` | `off` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
 | `--hotspot-tx-permit` | `same-color-code` | `same-color-code` or `always`. |
-| `--radio` | `uv878` | `uv878`, `uv878ii` or `uv890`. Which CPS layout to write. |
+| `--cps-format` | `1` | `0`, `1`, `2` or `3`. Which CPS layout to write. |
 
 `--sorting` controls zone order: `alpha` sorts every zone by name, while
 `repeaters-first` and `analog-first` put the repeater zones before or after the
@@ -62,34 +62,55 @@ analog and digital-other ones.
 `--hotspot-tx-permit=always` sets TX Permit to `Always` on channels whose RX and
 TX frequencies match, which is what a hotspot wants.
 
-### Radios
+### CPS formats
 
-CPS versions disagree about the shape of the import files, so pick the one
-matching your radio with `--radio`. The file names are the same whichever you
-choose; only the contents differ.
+CPS versions disagree about the shape of the import files, and which shape yours
+wants is a property of the CPS rather than of the radio — a newer CPS for the
+same radio can read a different layout. So the layouts are numbered, and
+`--cps-format` picks one. The file names are the same whichever you choose; only
+the contents differ.
 
-| | `uv878` | `uv878ii` | `uv890` |
-| --- | --- | --- | --- |
-| `channels.csv` columns | 51 | 55 | 77 |
-| `zones.csv` columns | 11 | 12 | 12 |
-| `talkgroups.csv` columns | 7 | 5 | 5 |
-| `scanlists.csv` columns | 18 | 18 | 18 |
-| Frequencies | as written in the input | five decimals | five decimals |
+| | `0` | `1` | `2` | `3` |
+| --- | --- | --- | --- | --- |
+| Verified against | AT-D868UV CPS | the Perl original | AT-D878UVII, and AT-D878UV on later firmware | AT-D890UV CPS 1.05 |
+| `channels.csv` columns | 38 | 51 | 55 | 77 |
+| `zones.csv` columns | 5 | 11 | 12 | 12 |
+| `talkgroups.csv` columns | 5 | 7 | 5 | 5 |
+| `scanlists.csv` columns | 12 | 18 | 18 | 18 |
+| Frequencies | five decimals | as written in the input | five decimals | five decimals |
 
-**`uv878` is the layout the Perl original wrote**, kept for older CPS versions.
-If you have an AT-D878UVII, you want `uv878ii`: its channel row differs from the
-old one from column 11 onward, so importing `uv878` output into it would land
-every field in the wrong column.
+The numbers run oldest CPS to newest, and each is a fixed identifier — a format
+discovered later is appended rather than slotted in. **Format `1` is the default
+because it is the layout the Perl original wrote**, so a command line that names
+no format keeps producing what it always has.
 
-`uv878ii` and `uv890` share a layout; the UV890 simply continues past column 55
-with a tail of NXDN and miscellaneous settings, and splits the TX color code into
-its own `txcc` column (always the same value as the RX one). Both add a trailing
-`Zone Hide` to zones and drop `Country` and `Remarks` from talkgroups.
+Format `0` is the narrowest: its channel row is format `1`'s first 38 columns
+(with `Scan List` named `CH Scan List`), its zones and scanlists carry no RX/TX
+frequency column beside each channel they name, and its talkgroups have no
+`Country` or `Remarks`.
 
-Each radio has its own defaults file in the `--config` directory —
-`channel-defaults.csv`, `uv878ii-channel-defaults.csv`,
-`uv890-channel-defaults.csv` — giving the value for every CPS field the inputs
-do not mention.
+Format `2` differs from `1` in the channel row from column 11 onward, so
+importing `1` output into a CPS that wants `2` would land every field in the
+wrong column. Formats `2` and `3` share a layout; `3` simply continues past
+column 55 with a tail of NXDN and miscellaneous settings, and splits the TX
+color code into its own `txcc` column (always the same value as the RX one).
+Both add a trailing `Zone Hide` to zones and drop `Country` and `Remarks` from
+talkgroups.
+
+One AT-D878UV shows why this is a CPS property and not a radio one: exported
+from two CPS versions, its channel file came out 52 columns wide from the older
+and 55 from the newer, while its zones, scanlists and talkgroups were identical
+either way. The 55-column one is format `2`. The 52-column layout is a strict
+prefix of it and is **not** a format this tool writes — update the radio's
+firmware and it becomes a format `2` radio.
+
+If an import is rejected or lands values in the wrong fields, try another
+format rather than assuming your radio's name picks it — export a codeplug from
+your own CPS and compare its headers against the four generated files.
+
+Each format has its own defaults file in the `--config` directory —
+`channel-defaults-0.csv` through `channel-defaults-3.csv` — giving the value for
+every CPS field the inputs do not mention.
 
 ### Nicknames
 
@@ -173,8 +194,8 @@ The CPS caps a scanlist at 50 channels and a zone at 250. Anything longer is
 truncated with a warning on stdout.
 
 The `--config` directory supplies the value for every CPS field the inputs don't
-mention, in a file per radio. Edit it to change defaults across all generated
-channels.
+mention, in a file per CPS format. Edit it to change defaults across all
+generated channels.
 
 ## Before importing into the CPS
 
@@ -203,13 +224,13 @@ channels.
 - **Errors go to stderr**, warnings to stdout. The Perl printed both to stdout.
 - **A blank line mid-file is skipped** rather than parsed as a row, because
   Python's `csv` yields `[]` where Perl's `Text::CSV` yields a one-element row.
-- **`--radio` is new.** The Perl only ever wrote the one layout, which survives
-  as `uv878`.
+- **`--cps-format` is new.** The Perl only ever wrote the one layout, which
+  survives as format `1`, the default.
 - **Scanlist rows fill all 18 columns.** The Perl emitted only 12 values under
   its own 18-column header, so everything from `Priority Channel 1` onward sat
   one column to the left and `Dwell Time[s]` was missing entirely. The values now
-  written are the ones UV878 and UV890 exports both contain, identically on every
-  scanlist.
+  written are the ones AT-D878UV and AT-D890UV exports both contain, identically
+  on every scanlist.
 
 Argument handling deliberately keeps `Getopt::Long`'s habits: an unknown option
 warns on stderr and prints usage, stray non-option arguments are ignored, `--`
@@ -220,6 +241,10 @@ ends option parsing, and unique option prefixes such as `--sort` are accepted.
 - **CTCSS tones are passed through as written.** An input of `123` stays `123`,
   where a radio's own export says `123.0`. Harmless if your CPS is relaxed about
   it; normalise the input file if it is not.
+- **Zones are written with `Zone Hide` off.** Formats `2` and `3` end each zone
+  row with `0`, where a radio's own export writes `1` on every zone. The CPS
+  accepts `0` — it is what the AT-D890UV CPS 1.05 imported — and appears to
+  normalise the column on export.
 - **Analog channels carry digital defaults.** They get `Busy Lock/TX Permit` from
   the defaults file where a radio would write `Off`, and their `Contact` is left
   blank where the CPS back-fills a placeholder talkgroup. Harmless — the CPS
@@ -234,9 +259,9 @@ python3 tests/test_error_regression.py
 python3 tests/test_args_regression.py
 ```
 
-Golden-file regression tests covering the generated files for all three radios
-across all 30 combinations of `--sorting`, `--nicknames` and
-`--hotspot-tx-permit`, 35 malformed-input cases, and 20 command-line cases. They need nothing installed
+Golden-file regression tests covering the generated files for all four CPS
+formats across all 30 combinations of `--sorting`, `--nicknames` and
+`--hotspot-tx-permit`, 35 malformed-input cases, and 21 command-line cases. They need nothing installed
 and run from any directory. See [tests/README.md](tests/README.md) for how to
 re-record them after an intentional change.
 
