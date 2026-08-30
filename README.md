@@ -51,7 +51,7 @@ ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On l
 | `--output-directory` | *required* | Where the four output files are written. Must exist. |
 | `--config` | `config` | Directory holding the channel defaults files. |
 | `--sorting` | `alpha` | `alpha`, `repeaters-first`, or `analog-first`. |
-| `--nicknames` | `off` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
+| `--nicknames` | `prefix` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
 | `--hotspot-tx-permit` | `same-color-code` | `same-color-code` or `always`. |
 | `--cps-format` | `1` | `0`, `1`, `2` or `3`. Which CPS layout to write. |
 
@@ -129,6 +129,10 @@ come out as:
 Talkgroup names take a `;nick` suffix too, used when the full name plus the zone
 nickname will not fit in 16 characters. The `-forced` modes always use the short
 form even when the long one would fit.
+
+`prefix` is the default: with `off`, every repeater in the matrix produces a
+channel named after nothing but its talkgroup, so the thousands of channels
+collapse onto a hundred-odd names and the CPS has no way to tell them apart.
 
 ## Input files
 
@@ -226,6 +230,11 @@ generated channels.
   Python's `csv` yields `[]` where Perl's `Text::CSV` yields a one-element row.
 - **`--cps-format` is new.** The Perl only ever wrote the one layout, which
   survives as format `1`, the default.
+- **`--nicknames` defaults to `prefix`**, where the Perl defaulted to `off`. On
+  a repeater matrix of any size `off` names every channel after its talkgroup
+  alone, so a run with no flags produced thousands of channels sharing a hundred
+  names — files the CPS accepts but the radio cannot be used with. Pass
+  `--nicknames=off` for the Perl's behaviour.
 - **Scanlist rows fill all 18 columns.** The Perl emitted only 12 values under
   its own 18-column header, so everything from `Priority Channel 1` onward sat
   one column to the left and `Dwell Time[s]` was missing entirely. The values now

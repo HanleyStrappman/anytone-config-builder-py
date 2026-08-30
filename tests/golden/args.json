@@ -2,20 +2,20 @@
   "abbrev-cps-format": {
     "exit": 0,
     "files": {
-      "channels.csv": "85ca95ba5cd243cd518e984ae2a91a32cbccb44cc3e57b2c0a445f2a7b87233b",
-      "scanlists.csv": "6baf17a294b57c0ae379213b7dcba29ca5e090e3560daf419a4cbf729e917586",
+      "channels.csv": "a7de0ecf325a080d2b91c58bd73efb4cec7e103c9b326045d8eda0ba4b29dcb6",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
       "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
-      "zones.csv": "21c98dacdb70c8c0c270c50ffb2ebd095deec5cbb2ec825ef25665ffbf626ea8"
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
     },
     "output": ""
   },
   "abbrev-hotspot": {
     "exit": 0,
     "files": {
-      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+      "zones.csv": "750474f037166940cd0f44694b6763e0c6dd06e2ddb801eda0075f369fd6c200"
     },
     "output": ""
   },
@@ -32,40 +32,40 @@
   "abbrev-sort": {
     "exit": 0,
     "files": {
-      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "db5365bcaf318555d638d715b306d6edada5a1adf9e07ec4695cda14727a5c0a"
+      "zones.csv": "c979dd9b5a36f1e25d42f56a984fc76c3b7c04730b712a0c288cd46cd4d0ac62"
     },
     "output": ""
   },
   "cps-format-0": {
     "exit": 0,
     "files": {
-      "channels.csv": "d5b57a284672e778fbb0cefcfc51247096b8912b2f7c2ac5b71654e9c272d202",
-      "scanlists.csv": "43252409c141f568be4be9fa3c1a834ec47736578dde455cd518d63f03d28d98",
+      "channels.csv": "3cec844702b84c04698337f33e91044875019a8f234b0e0becedbcfa789ffea7",
+      "scanlists.csv": "809556bdd87ebea0d1ac9dddc2479e70023a2c3d79c0d2cc273b6ac4b04fbe7a",
       "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
-      "zones.csv": "b2123676ea07f4fbed77e0c1db099de43b3d7d2c1316b1e77ffede2fd3ac1487"
+      "zones.csv": "4e0ad6cb4c267bfe2f023a40b781fef2940cd70ac3a3d4fef4813712bf1fa286"
     },
     "output": ""
   },
   "cps-format-2": {
     "exit": 0,
     "files": {
-      "channels.csv": "eb13593e58768f02a9aa6449d50437c8285e2e66173455aad9a4f2b9953e3349",
-      "scanlists.csv": "6baf17a294b57c0ae379213b7dcba29ca5e090e3560daf419a4cbf729e917586",
+      "channels.csv": "71fe2fa2dbec74dc656c5e356259fa58ef01f7fe4470608fe5cc8043cb87a6eb",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
       "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
-      "zones.csv": "21c98dacdb70c8c0c270c50ffb2ebd095deec5cbb2ec825ef25665ffbf626ea8"
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
     },
     "output": ""
   },
   "cps-format-3": {
     "exit": 0,
     "files": {
-      "channels.csv": "85ca95ba5cd243cd518e984ae2a91a32cbccb44cc3e57b2c0a445f2a7b87233b",
-      "scanlists.csv": "6baf17a294b57c0ae379213b7dcba29ca5e090e3560daf419a4cbf729e917586",
+      "channels.csv": "a7de0ecf325a080d2b91c58bd73efb4cec7e103c9b326045d8eda0ba4b29dcb6",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
       "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
-      "zones.csv": "21c98dacdb70c8c0c270c50ffb2ebd095deec5cbb2ec825ef25665ffbf626ea8"
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
     },
     "output": ""
   },
@@ -142,30 +142,30 @@
   "space-separated": {
     "exit": 0,
     "files": {
-      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+      "zones.csv": "750474f037166940cd0f44694b6763e0c6dd06e2ddb801eda0075f369fd6c200"
     },
     "output": ""
   },
   "stray-positional": {
     "exit": 0,
     "files": {
-      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+      "zones.csv": "750474f037166940cd0f44694b6763e0c6dd06e2ddb801eda0075f369fd6c200"
     },
     "output": ""
   },
   "two-positionals": {
     "exit": 0,
     "files": {
-      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "b7c51ea9c183c3ebb36ab74db4506336c95f7928998f8cc90f66b050bca3c0ac"
+      "zones.csv": "750474f037166940cd0f44694b6763e0c6dd06e2ddb801eda0075f369fd6c200"
     },
     "output": ""
   },

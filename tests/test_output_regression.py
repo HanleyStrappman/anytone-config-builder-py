@@ -41,7 +41,7 @@ from _golden import (GOLDEN, OUTPUTS, REAL_INPUTS, REPO, compare, digests, load,
                      report, run, save, updating)
 
 FORMATS = ("0", "1", "2", "3")
-DEFAULT_COMBO = "alpha.off.same-color-code"
+DEFAULT_COMBO = "alpha.prefix.same-color-code"
 FULL_COPIES = os.path.join(GOLDEN, "default")
 
 COMBOS = [(f, s, n, h)

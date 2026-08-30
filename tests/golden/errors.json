@@ -2,7 +2,7 @@
   "analog-extra-column": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -12,7 +12,7 @@
   "bad-bandwidth": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -52,7 +52,7 @@
   "bad-ctcss": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -62,7 +62,7 @@
   "bad-freq-analog": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -72,7 +72,7 @@
   "bad-freq-nonnumeric": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -112,7 +112,7 @@
   "bad-power-analog": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -162,7 +162,7 @@
   "bad-tx-prohibit": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -172,27 +172,27 @@
   "chan-name-no-fit": {
     "exit": 0,
     "files": {
-      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
+      "channels.csv": "fc136b86a5a36631fc949ab996d571cf0d7a5c8f5fa5d4afd07af1cab7c0bda5",
+      "scanlists.csv": "22bfd6b276e1bf3cf8a0e256b1e3145fac8fd78b5c0af33d5ff5972d3d440392",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "66b6d9052160bf0fdbeed703a2c2cbb7bc3d0e98d1685fc2d4060add7d0db11b"
+      "zones.csv": "aa14ad00a6bd971229af667020071acc1c316b1bbdc63bedfce49a75f8932a90"
     },
     "output": "ERROR: Invalid Zone: 'AriellllllllllVHF' is more than 16 characters, truncated to 'AriellllllllllVH' [On line #1 of Digital-Repeater file.]\n"
   },
   "empty-analog": {
     "exit": 0,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
-      "scanlists.csv": "e1858e868898f002f728e177c02161174438e36a5f0e6032f1e8d7c2fcb5ef27",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
+      "scanlists.csv": "ee2e2c7fce344366dac696801a282b7062f9ea562f3356d708eb1bbc35166b4a",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "f2fa5bd4bce45004c5d40753c5d31e4b7339f06fe9d6689e0d6a023c68b60092"
+      "zones.csv": "970500be5360c634e1c799bd638bd5e63104677737aa0d2f51299c9fcd56df1c"
     },
     "output": ""
   },
   "hdr-analog-short": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -202,7 +202,7 @@
   "hdr-analog-wrong": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -232,47 +232,47 @@
   "long-chan-name": {
     "exit": 0,
     "files": {
-      "channels.csv": "e88945b83a73b11099a418cb60f56acb7a4e333b0ae7a63db569bca7e50cf717",
-      "scanlists.csv": "068a69f11763ba5188c483670dd386e145a8b57d69442176c61e70a1abfdcf14",
+      "channels.csv": "10120f8ded09aa9c06ad37ee13c7138d7c11cc998b0eb72ae953cd431b96dbd1",
+      "scanlists.csv": "32b60d35f0d688ea09db299478a5ccf6a6e21978a9afa87657bf85c79de4a7b2",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "c3066d445966e4c67bc52739a1f3775d08a45133725c56cab4539d76b3c08057"
+      "zones.csv": "037794b6557b128d70a8fa1b4c4f90047837d3a340e575685d5b65262ba585c9"
     },
     "output": "ERROR: Invalid Channel Name: '146.500 aprs long name' is more than 16 characters, truncated to '146.500 aprs lon' [On line #1 of Analog file.]\n"
   },
   "long-talkgroup": {
-    "exit": 0,
+    "exit": 255,
     "files": {
-      "channels.csv": "6a08d72a0d0461c0310bd6b6c846ca2d5105495ecf147c2786831b93d9d9b039",
-      "scanlists.csv": "2f89d94db0bc224069295b23c4d94c960533a855e86e0fc0e34ed02cfea0171b",
-      "talkgroups.csv": "b7fddd96c04787a7e05a82088ed7e33c8718b7d464a4fc3b8e2817cb54d1b59c",
-      "zones.csv": "08091678d2f502641827543e6cbe3f6e72e47d15951647b1cd6004352da47604"
+      "channels.csv": "ed4293dca1baa481c7dcbcaaf0ae0552650b8755e7890c0df6b2dcaa85aee2b3",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
     },
-    "output": "ERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #0 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #1 of Digital-Others file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #2 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #2 of Digital-Repeater file.]\n"
+    "output": "ERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #0 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Very Long Name' is more than 16 characters, truncated to 'Local 1 Very Lon' [On line #1 of Digital-Others file.]\nERROR: Can't make a channel name fit into 16 characters for 'ARA' and 'Local 1 Very Long Name'\n"
   },
   "long-zone-analog": {
     "exit": 0,
     "files": {
-      "channels.csv": "a7ce1b550e430d38c38b6cd56e6bdfb025697446d43e3fe7910e63b775ba6191",
-      "scanlists.csv": "61ce5adcbee5e335159f1f48fca70c8964e1034d4d67fda5fc9f4eab1b6b6e26",
+      "channels.csv": "8674c20511ef6927fb254749e8a6d34e9fe4c2a2265b1e92f142cd3180939c82",
+      "scanlists.csv": "63b8f0fad21e5287ac10021f9b059c4feb714b43f269e8a72fa81e0aa0b03228",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "693feaee9c656799480d98e63a3d85cc8b78df54489cb20a1e0190055d6c840c"
+      "zones.csv": "db4ad598d8af40ced23d8f0f716e96ff85800fab92303e6ac43b7e362ab99eba"
     },
     "output": "ERROR: Invalid Zone: 'APRS - Analog Zone XYZ' is more than 16 characters, truncated to 'APRS - Analog Zo' [On line #1 of Analog file.]\n"
   },
   "long-zone-repeater": {
     "exit": 0,
     "files": {
-      "channels.csv": "da08d42e776b1f561540467e7ba2d06e88c14ef919165689d96ffe35650e56dd",
-      "scanlists.csv": "ee4e76f1fadcfa7236ef42f95a9b2e0d87a7c98efe18cf8489045736507e670d",
+      "channels.csv": "802a7759e7fe1baef510faa1522590fa8087c78013f220fd9a7139df8e47267e",
+      "scanlists.csv": "6f4c9aa19a0a1def249a2604b6252b5d764db5a606cccd9b4913df7fab5f424f",
       "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
-      "zones.csv": "3d931d1570b95d9a4232e26753c83658b9cd7e27b54023bb5de4499b7cd343e6"
+      "zones.csv": "7b998b6e4fc07e6bdfe07a3e551a245b08de41c4b06755a73f8de328fcb86613"
     },
     "output": "ERROR: Invalid Zone: 'Ariel/Ariel VHF Long' is more than 16 characters, truncated to 'Ariel/Ariel VHF ' [On line #1 of Digital-Repeater file.]\n"
   },
   "missing-analog": {
     "exit": 255,
     "files": {
-      "channels.csv": "a9a8989cada5fb7df176733ef063a1571691f335964a095125af806e02cdba12",
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null
@@ -320,14 +320,14 @@
     "output": "ERROR: Invalid Time Slot: '1P' is not one of: 1, 2, - [On line #1 of Digital-Repeater file.]\n"
   },
   "truncation-collision": {
-    "exit": 0,
+    "exit": 255,
     "files": {
-      "channels.csv": "c18a1c3dea2534d0cb7dbf3627cff27d4f72204ba193a2b8a98193fd2dc152a6",
-      "scanlists.csv": "e49a494dab4e783d128ff15d0227d5c3d58c882d281b34ee5d5fe07a72b5defd",
-      "talkgroups.csv": "6a3f7be8d9eaa4de6e1521cac1939a1f91606e53256a6521ae14d1535b3e9b19",
-      "zones.csv": "d9a9872b2061ac7ec6a39adb7b38da7aa4bb41fc806210c82c4a6ebb74ffd754"
+      "channels.csv": "30b17cb66ece335c662fb246ee0fb15f22612b3fd6933f6c2dc7d2c7bc695c74",
+      "scanlists.csv": null,
+      "talkgroups.csv": null,
+      "zones.csv": null
     },
-    "output": "WARNING: Talkgroups 'Local 1 Northwest A' and 'Local 1 Northwest B' both shorten to 'Local 1 Northwes', so the radio cannot tell them apart. Using the last one.\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #0 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest B' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest B' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Digital-Others file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Digital-Repeater file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #2 of Digital-Repeater file.]\nERROR: Invalid Channel Name: 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #2 of Digital-Repeater file.]\n"
+    "output": "WARNING: Talkgroups 'Local 1 Northwest A' and 'Local 1 Northwest B' both shorten to 'Local 1 Northwes', so the radio cannot tell them apart. Using the last one.\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest A' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #0 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest B' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Talkgroup file.]\nERROR: Invalid Contact (aka Talk Group): 'Local 1 Northwest B' is more than 16 characters, truncated to 'Local 1 Northwes' [On line #1 of Digital-Others file.]\nERROR: Can't make a channel name fit into 16 characters for 'ARA' and 'Local 1 Northwest A'\n"
   },
   "unknown-talkgroup": {
     "exit": 255,
@@ -342,7 +342,7 @@
   "unknown-tg-matrix": {
     "exit": 255,
     "files": {
-      "channels.csv": "41d5cdc4a0826264c09f810598a94fe4c8b3aa95bb007d8e7cb1c016a43ee7d3",
+      "channels.csv": "d26e9cfd2a374321fe332ec41064de740aec06f1815acd6ed55a733fe0f7a8b4",
       "scanlists.csv": null,
       "talkgroups.csv": null,
       "zones.csv": null

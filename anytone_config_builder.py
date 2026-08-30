@@ -400,7 +400,7 @@ def _validate_string_length(type_name, string, length, ctx=NO_FILE_CONTEXT):
 
 class ConfigBuilder:
     def __init__(self, sort_mode="alpha", hotspot_tx_permit="same-color-code",
-                 nickname_mode="off", cps_format="1"):
+                 nickname_mode="prefix", cps_format="1"):
         self.cps_format = CPS_FORMATS[cps_format]
         self.sort_mode = sort_mode
         self.hotspot_tx_permit = hotspot_tx_permit
@@ -1056,7 +1056,7 @@ def handle_command_line_args(argv):
     parser.add_argument("--config")
     parser.add_argument("--output-directory")
     parser.add_argument("--sorting", default="alpha")
-    parser.add_argument("--nicknames", default="off")
+    parser.add_argument("--nicknames", default="prefix")
     parser.add_argument("--hotspot-tx-permit", default="same-color-code")
     parser.add_argument("--cps-format", default="1")
 
