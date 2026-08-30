@@ -1,8 +1,7 @@
 # Anytone Config Builder
 
-Builds the `channels.csv`, `zones.csv`, `scanlists.csv` and `talkgroups.csv`
-files that the Anytone CPS imports, from four readable CSV inputs you can keep
-under version control.
+Builds the four channel, zone, scanlist and talkgroup files that the Anytone CPS
+imports, from four readable CSV inputs you can keep under version control.
 
 Codeplug files are opaque: hard to diff, hard to audit, hard to prune, and easy
 to get subtly wrong by hand. Keeping the *source* of your codeplug as CSV and
@@ -67,16 +66,16 @@ TX frequencies match, which is what a hotspot wants.
 CPS versions disagree about the shape of the import files, and which shape yours
 wants is a property of the CPS rather than of the radio — a newer CPS for the
 same radio can read a different layout. So the layouts are numbered, and
-`--cps-format` picks one. The file names are the same whichever you choose; only
-the contents differ.
+`--cps-format` picks one. Formats `0` to `2` agree on the file names and differ
+only in contents; format `3` writes the names AT-D890UV CPS 1.05 uses.
 
 | | `0` | `1` | `2` | `3` |
 | --- | --- | --- | --- | --- |
 | Verified against | AT-D868UV CPS | the Perl original | AT-D878UVII, and AT-D878UV on later firmware | AT-D890UV CPS 1.05 |
-| `channels.csv` columns | 38 | 51 | 55 | 77 |
-| `zones.csv` columns | 5 | 11 | 12 | 12 |
-| `talkgroups.csv` columns | 5 | 7 | 5 | 5 |
-| `scanlists.csv` columns | 12 | 18 | 18 | 18 |
+| Channel file | `channels.csv`, 38 columns | `channels.csv`, 51 | `channels.csv`, 55 | `Channel.CSV`, 77 |
+| Zone file | `zones.csv`, 5 columns | `zones.csv`, 11 | `zones.csv`, 12 | `DMRZones.CSV`, 12 |
+| Talkgroup file | `talkgroups.csv`, 5 columns | `talkgroups.csv`, 7 | `talkgroups.csv`, 5 | `DMRTalkGroups.CSV`, 5 |
+| Scanlist file | `scanlists.csv`, 12 columns | `scanlists.csv`, 18 | `scanlists.csv`, 18 | `ScanList.CSV`, 18 |
 | Frequencies | five decimals | as written in the input | five decimals | five decimals |
 
 The numbers run oldest CPS to newest, and each is a fixed identifier — a format
@@ -96,6 +95,12 @@ column 55 with a tail of NXDN and miscellaneous settings, and splits the TX
 color code into its own `txcc` column (always the same value as the RX one).
 Both add a trailing `Zone Hide` to zones and drop `Country` and `Remarks` from
 talkgroups.
+
+Format `3` is also the only one whose file names differ, because CPS 1.05 handles
+the AM airband alongside DMR and keeps the two apart by name: the DMR zones and
+talkgroups take the prefix, leaving `AMZone.CSV` and `AMAir.CSV` for the airband.
+Those two need frequencies none of the input files carry, so this tool does not
+write them and the CPS keeps whatever the radio already holds.
 
 One AT-D878UV shows why this is a CPS property and not a radio one: exported
 from two CPS versions, its channel file came out 52 columns wide from the older
@@ -183,7 +188,9 @@ the ones used in the two DMR files above.
 
 ## Output
 
-Four files, ready to import:
+Four files, ready to import. The names below are what formats `0` to `2` write;
+format `3` writes the same four as `Channel.CSV`, `DMRZones.CSV`, `ScanList.CSV`
+and `DMRTalkGroups.CSV`.
 
 - `channels.csv` — one channel per row in the analog and digital-others files,
   plus one per repeater/talkgroup pair from the matrix

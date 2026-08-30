@@ -37,7 +37,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _golden import (GOLDEN, OUTPUTS, REAL_INPUTS, REPO, compare, digests, load,
+from _golden import (GOLDEN, REAL_INPUTS, REPO, compare, digests, load, outputs,
                      report, run, save, updating)
 
 FORMATS = ("0", "1", "2", "3")
@@ -81,9 +81,10 @@ if updating():
     for fmt in FORMATS:
         into = os.path.join(FULL_COPIES, fmt)
         os.makedirs(into)
-        for name in OUTPUTS:
+        names = outputs(dirs[f"{fmt}.{DEFAULT_COMBO}"])
+        for name in names:
             shutil.copy(os.path.join(dirs[f"{fmt}.{DEFAULT_COMBO}"], name), into)
-        print(f"recorded {len(OUTPUTS)} full files under "
+        print(f"recorded {len(names)} full files under "
               f"{os.path.relpath(into, REPO)} ({DEFAULT_COMBO})")
     shutil.rmtree(work, ignore_errors=True)
     sys.exit(0)
@@ -99,9 +100,10 @@ for tag in sorted(actual):
 # The default combination is also held as full files, so a digest mismatch there
 # can be turned into a readable diff instead of two hex strings.
 for fmt in FORMATS:
-    for name in OUTPUTS:
+    fresh_dir = dirs[f"{fmt}.{DEFAULT_COMBO}"]
+    for name in outputs(fresh_dir):
         golden_file = os.path.join(FULL_COPIES, fmt, name)
-        fresh = os.path.join(dirs[f"{fmt}.{DEFAULT_COMBO}"], name)
+        fresh = os.path.join(fresh_dir, name)
         if not os.path.exists(golden_file):
             results.append((f"default/{fmt}/{name}", ["no full copy recorded"]))
         elif not filecmp.cmp(golden_file, fresh, shallow=False):
@@ -110,6 +112,14 @@ for fmt in FORMATS:
                              f"diff it against {fresh}"]))
         else:
             results.append((f"default/{fmt}/{name}", []))
+
+    # A recorded copy the run no longer produces means the format's file names
+    # moved and the goldens were never re-recorded.
+    recorded = os.path.join(FULL_COPIES, fmt)
+    stale = (set(outputs(recorded)) - set(outputs(fresh_dir))
+             if os.path.isdir(recorded) else set())
+    for name in sorted(stale):
+        results.append((f"default/{fmt}/{name}", ["recorded, but no longer written"]))
 
 code = report(results, "flag combinations")
 shutil.rmtree(work, ignore_errors=True)

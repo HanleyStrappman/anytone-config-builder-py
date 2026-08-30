@@ -36,8 +36,6 @@ BUILDER = os.path.join(REPO, "anytone_config_builder.py")
 FIXTURES = os.path.join(HERE, "fixtures")
 GOLDEN = os.path.join(HERE, "golden")
 
-OUTPUTS = ("channels.csv", "zones.csv", "scanlists.csv", "talkgroups.csv")
-
 # The real inputs in the repo root, used as-is: the builder is never pointed at a
 # modified copy of them, and never writes anywhere near them.
 REAL_INPUTS = {
@@ -87,13 +85,24 @@ def run(args, replacements, cwd=None):
     return p.returncode, scrub(p.stdout + p.stderr, replacements)
 
 
+def outputs(outdir):
+    """The files a run actually wrote, sorted.
+
+    Deliberately a directory listing rather than a fixed list of names: what the
+    four outputs are called is a property of the CPS format, so reading it back
+    from CPS_FORMATS would only prove the builder agrees with itself.  Taking
+    whatever landed in the directory makes the recorded golden the assertion --
+    a name that changes, appears or goes missing shows up as a diff to read.
+    """
+    return sorted(name for name in os.listdir(outdir) if not name.startswith("."))
+
+
 def digests(outdir):
-    """sha256 of each generated file, or None where the file wasn't written."""
+    """sha256 of each file the run generated, keyed by name."""
     out = {}
-    for name in OUTPUTS:
+    for name in outputs(outdir):
         path = os.path.join(outdir, name)
-        out[name] = (hashlib.sha256(open(path, "rb").read()).hexdigest()
-                     if os.path.exists(path) else None)
+        out[name] = hashlib.sha256(open(path, "rb").read()).hexdigest()
     return out
 
 
@@ -131,8 +140,12 @@ def compare(expected, actual):
         if not problems or want == got:
             problems.append("output differs in line order or whitespace")
 
-    for name, want in (expected.get("files") or {}).items():
-        got = (actual.get("files") or {}).get(name)
+    # Both sides, so a file that appears when it shouldn't is caught too -- a
+    # renamed output otherwise reads as the old name merely going missing.
+    want_files = expected.get("files") or {}
+    got_files = actual.get("files") or {}
+    for name in sorted(want_files.keys() | got_files.keys()):
+        want, got = want_files.get(name), got_files.get(name)
         if want != got:
             problems.append(f"{name}: "
                             + ("not generated" if got is None else

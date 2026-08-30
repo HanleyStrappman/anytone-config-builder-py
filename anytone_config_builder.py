@@ -25,9 +25,9 @@
 A Python port of anytone-config-builder.pl.
 
 Reads the analog, digital-other and digital-repeater channel CSVs (plus a
-talkgroup CSV and a channel-defaults config file) and writes the channels.csv,
-zones.csv, scanlists.csv and talkgroups.csv files that the Anytone CPS software
-imports.
+talkgroup CSV and a channel-defaults config file) and writes the four channel,
+zone, scanlist and talkgroup files that the Anytone CPS software imports.  What
+those four are called depends on the CPS -- see OUTPUT_FILES.
 """
 
 from __future__ import annotations
@@ -112,16 +112,26 @@ SCANLIST_DETAILS = ("Off", "Off", "Off", "", "", "Off", "", "", "Selected",
 SCANLIST_DETAILS_NO_FREQS = ("Off", "Off", "Off", "Off", "Selected",
                              "0.5", "0.1", "0.1", "0.0")
 
-# Every format writes the same four file names; only their contents differ.
+# The four file names formats 0 through 2 share.  Each is what its own CPS writes
+# when it exports, which is also what it expects back on import.
 OUTPUT_FILES = {"channels": "channels.csv", "zones": "zones.csv",
                 "scanlists": "scanlists.csv", "talkgroups": "talkgroups.csv"}
+
+# AT-D890UV CPS 1.05 handles the AM airband as well as DMR, and keeps the two
+# apart by name: its DMR zones and talkgroups take the prefix, leaving AMZone.CSV
+# and AMAir.CSV for the airband.  Those two need frequencies none of the input
+# files carry, so this builder does not write them -- the CPS keeps whatever the
+# radio already holds.
+FORMAT_3_FILES = {"channels": "Channel.CSV", "zones": "DMRZones.CSV",
+                  "scanlists": "ScanList.CSV", "talkgroups": "DMRTalkGroups.CSV"}
 
 
 class CpsFormat:
     """How one CPS wants its four import files shaped."""
 
     def __init__(self, name, defaults, columns=None, freq_decimals=None,
-                 zone_hide=False, talkgroup_notes=True, member_freqs=True):
+                 zone_hide=False, talkgroup_notes=True, member_freqs=True,
+                 files=None):
         self.name = name
         self.defaults = defaults            # channel defaults file, inside --config
         self.columns = columns              # output column -> internal CHAN_* field
@@ -130,6 +140,7 @@ class CpsFormat:
         self.talkgroup_notes = talkgroup_notes  # Country and Remarks columns
         self.member_freqs = member_freqs    # RX/TX frequency columns beside each
                                             # channel named in zones and scanlists
+        self.files = files or OUTPUT_FILES  # what this CPS calls the four outputs
 
     def field_for_column(self, column):
         """Which internal field feeds this output column, or None for a default.
@@ -211,6 +222,7 @@ CPS_FORMATS = {
         freq_decimals=5,
         zone_hide=True,
         talkgroup_notes=False,
+        files=FORMAT_3_FILES,
     ),
 }
 
@@ -423,7 +435,7 @@ class ConfigBuilder:
 
     def run(self, analog_filename, digital_others_filename, digital_repeaters_filename,
             talkgroups_filename, config_directory, output_directory):
-        files = OUTPUT_FILES
+        files = self.cps_format.files
 
         self.read_talkgroups(talkgroups_filename)
         self.read_channel_csv_default(f"{config_directory}/{self.cps_format.defaults}")

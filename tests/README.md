@@ -41,7 +41,9 @@ with the `Text::CSV_XS` shim that let it run here.
 ## Layout
 
 - `golden/outputs.json` — exit status, messages and a SHA-256 per generated file,
-  for each CPS format crossed with each of the 30 flag combinations.
+  for each CPS format crossed with each of the 30 flag combinations. The file
+  names are recorded, not assumed, so a format that renames its outputs shows up
+  as a diff rather than as four files quietly going missing.
 - `golden/default/<format>/` — full copies of the four CSVs for each format's
   default combination (`alpha` / `prefix` / `same-color-code`), so a
   digest mismatch can be turned into a readable diff instead of two hex strings.
