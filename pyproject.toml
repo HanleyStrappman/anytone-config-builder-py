@@ -42,3 +42,26 @@ include = [
     "/README.md",
     "/LICENSE.md",
 ]
+
+# The version lives in one place -- anytone_config_builder/__init__.py, which
+# hatchling reads above. bump-my-version rewrites it, commits and tags:
+#
+#     uvx bump-my-version bump patch     # or minor, or major
+#     uvx bump-my-version show-bump      # what each of those would produce
+#
+# It is a release-time tool, not a dependency: nothing the package installs
+# needs it, so it is deliberately not in [project].
+[tool.bumpversion]
+current_version = "1.0.0"
+allow_dirty = false
+commit = true
+message = "Bump version: {current_version} -> {new_version}"
+tag = true
+tag_name = "v{new_version}"
+tag_message = "Version {new_version}"
+sign_tags = false
+
+[[tool.bumpversion.files]]
+filename = "anytone_config_builder/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'

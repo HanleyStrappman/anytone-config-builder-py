@@ -35,6 +35,19 @@ no `--config` and works from any directory. To build the distribution yourself:
 python -m build          # writes dist/*.whl and dist/*.tar.gz
 ```
 
+The version is `__version__` in `anytone_config_builder/__init__.py`, and
+nothing else reads it from anywhere else.
+[bump-my-version](https://github.com/callowayproject/bump-my-version) moves it
+there and in `pyproject.toml`, then commits and tags `v<version>`:
+
+```sh
+uvx bump-my-version show-bump     # what each bump would produce
+uvx bump-my-version bump patch    # or minor, or major
+```
+
+It refuses to run on a dirty tree, so commit your work first. It is a
+release-time tool only; the package itself still installs nothing.
+
 ## Usage
 
 The output directory must already exist; the builder will not create it.
