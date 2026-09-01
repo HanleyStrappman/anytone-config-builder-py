@@ -7,7 +7,7 @@ recorded results under `golden/`.
 Run them with plain `python3`; there is nothing to install, and they work from
 any working directory.
 
-```
+```text
 python3 tests/test_output_regression.py
 python3 tests/test_error_regression.py
 python3 tests/test_args_regression.py
@@ -25,7 +25,7 @@ When you change the builder on purpose, the goldens will no longer match. Re-rec
 with `--update` and **read the diff** — that diff is the whole point of these tests,
 and it is the only thing standing between an intended change and an accidental one.
 
-```
+```text
 python3 tests/test_output_regression.py --update
 ```
 

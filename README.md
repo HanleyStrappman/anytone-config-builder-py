@@ -13,6 +13,13 @@ tool](https://github.com/HanleyStrappman/anytone-config-builder). See
 [Differences from the Perl original](#differences-from-the-perl-original) for
 where the two diverge.
 
+AG7T did use [claude-code](https://claude.com/product/claude-code)
+to help analyze the various CPS formats and write the code.
+This was done under direct guidance of AG7T who takes
+full responsibility for the code. AG7T finds test cases written by
+claude-code to be outstanding and that produces a level of quality that
+exceeds many hobby projects like this one.
+
 ## Requirements
 
 Python 3 and nothing else — no third-party packages at any version. (The Perl
@@ -57,7 +64,7 @@ Installed, the command is `acb`. From a checkout it is
 directly — the three take identical arguments, and the rest of this README
 writes `acb`.
 
-```sh
+```shell
 mkdir -p output
 
 acb \
@@ -70,7 +77,7 @@ acb \
 
 Errors go to stderr and name the file and line they came from:
 
-```
+```text
 ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On line #1 of Analog file.]
 ```
 
