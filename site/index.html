@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anytone Config Builder</title>
+<link rel="stylesheet" href="./acb-web.css">
+<script defer src="./acb-web.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>Anytone Config Builder</h1>
+  <p class="lede">
+    Builds the channel, zone, scanlist and talkgroup files the Anytone CPS
+    imports, from four readable CSV files you can keep under version control.
+    Pick your files, choose a CPS format, and get back a zip of the lot.
+  </p>
+  <p class="privacy">
+    Everything runs in your browser. Your files are never uploaded &mdash; there
+    is no server here to upload them to.
+  </p>
+</header>
+
+<main>
+
+<section class="panel">
+  <h2>Your files</h2>
+
+  <div class="field">
+    <label for="file-analog">Analog <span class="req">required</span></label>
+    <input type="file" id="file-analog" accept=".csv,text/csv">
+    <p class="note">Analog FM channels. <code>Zone, Channel Name, Bandwidth,
+      Power, RX Freq, TX Freq, CTCSS Decode, CTCSS Encode, TX Prohibit</code></p>
+    <p class="chosen" id="name-analog"></p>
+  </div>
+
+  <div class="field">
+    <label for="file-digital_others">Digital-Others <span class="req">required</span></label>
+    <input type="file" id="file-digital_others" accept=".csv,text/csv">
+    <p class="note">One-off DMR channels &mdash; simplex, hotspots, digital APRS.</p>
+    <p class="chosen" id="name-digital_others"></p>
+  </div>
+
+  <div class="field">
+    <label for="file-digital_repeaters">Digital-Repeaters <span class="req">required</span></label>
+    <input type="file" id="file-digital_repeaters" accept=".csv,text/csv">
+    <p class="note">The repeater &times; talkgroup matrix, multiplied out into one
+      channel per repeater per talkgroup. Where most of the work happens.</p>
+    <p class="chosen" id="name-digital_repeaters"></p>
+  </div>
+
+  <div class="field">
+    <label for="file-talkgroups">Talkgroups <span class="req">required</span></label>
+    <input type="file" id="file-talkgroups" accept=".csv,text/csv">
+    <p class="note">Two columns, no header: talkgroup name and numeric ID. Names
+      must match the ones the two DMR files above use.</p>
+    <p class="chosen" id="name-talkgroups"></p>
+  </div>
+
+  <div class="field">
+    <label for="file-am_air">AM Airband <span class="opt">optional</span></label>
+    <input type="file" id="file-am_air" accept=".csv,text/csv">
+    <p class="note">Only CPS format 3 reads the result. Leave this empty and the
+      radio keeps whatever airband channels it already has.</p>
+    <p class="chosen" id="name-am_air"></p>
+  </div>
+
+  <button type="button" id="examples" disabled>Load the PNW example set</button>
+</section>
+
+<section class="panel">
+  <h2>Options</h2>
+
+  <div class="field">
+    <label for="cps_format">CPS format</label>
+    <select id="cps_format">
+      <option value="0">0 &mdash; AT-D868UV CPS</option>
+      <option value="1" selected>1 &mdash; the default</option>
+      <option value="2">2 &mdash; AT-D878UVII, AT-D878UV on later firmware</option>
+      <option value="3">3 &mdash; AT-D890UV CPS 1.05</option>
+    </select>
+    <p class="note important">
+      Which layout your CPS wants is a property of the <em>CPS</em>, not of the
+      radio &mdash; a newer CPS for the same radio can read a different one.
+      Format 1 is the default because it is what the original Perl tool wrote.
+      <strong>If you are unsure, export a codeplug from your own CPS and compare
+      its column headers against the files you get back.</strong> Formats 1 and 2
+      differ from column 11 onward, so the wrong choice can import without
+      complaint and put every value in the wrong field.
+    </p>
+  </div>
+
+  <div class="field">
+    <label for="sorting">Zone sorting</label>
+    <select id="sorting">
+      <option value="alpha" selected>alpha</option>
+      <option value="repeaters-first">repeaters-first</option>
+      <option value="analog-first">analog-first</option>
+    </select>
+    <p class="note"><code>alpha</code> sorts every zone by name. The other two put
+      the repeater zones before or after the analog and digital-other ones.</p>
+  </div>
+
+  <div class="field">
+    <label for="nicknames">Nicknames</label>
+    <select id="nicknames">
+      <option value="off">off</option>
+      <option value="prefix" selected>prefix</option>
+      <option value="suffix">suffix</option>
+      <option value="prefix-forced">prefix-forced</option>
+      <option value="suffix-forced">suffix-forced</option>
+    </select>
+    <p class="note">Works a zone's nickname into each channel name:
+      <code>ARA Audio Test 2</code> rather than <code>Audio Test 2</code>. With
+      <code>off</code>, every repeater's channels are named after nothing but
+      their talkgroup, so thousands of channels collapse onto a hundred-odd names
+      the radio cannot tell apart.</p>
+  </div>
+
+  <div class="field">
+    <label for="hotspot_tx_permit">Hotspot TX permit</label>
+    <select id="hotspot_tx_permit">
+      <option value="same-color-code" selected>same-color-code</option>
+      <option value="always">always</option>
+    </select>
+    <p class="note"><code>always</code> sets TX Permit to Always on channels whose
+      RX and TX frequencies match, which is what a hotspot wants.</p>
+  </div>
+</section>
+
+<section class="panel panel-run">
+  <button type="button" id="build" disabled>Build</button>
+  <p class="status" id="status">Starting&hellip;</p>
+</section>
+
+<section class="panel" id="results" hidden></section>
+
+<section class="panel">
+  <h2>Before importing into the CPS</h2>
+  <ul class="advice">
+    <li><strong>Duplicate names.</strong> Repeater channels are named after their
+      talkgroups, so the same name recurs across repeaters. Turn on
+      <em>Tools &gt; Mode &gt;</em> &ldquo;Contact name is not unique / Channel
+      name is not unique&rdquo; first, or the import will fail.</li>
+    <li><strong>Radio ID.</strong> The output references a radio ID named
+      <code>DMR ID</code>. Under the <em>Digital</em> tab, add your DMR ID to the
+      Radio ID List under that name.</li>
+    <li><strong>Contacts.</strong> Not generated. Start from a codeplug that has
+      them, then import these files over the top.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer>
+  <p id="version"></p>
+  <p>A Python port of K7ABD&rsquo;s original tool. GPL-3.</p>
+</footer>
+
+</body>
+</html>

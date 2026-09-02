@@ -2,7 +2,8 @@
 
 Golden-file tests for `anytone_config_builder/builder.py`. Each one runs the builder and
 compares its exit status, its messages, and the files it generates against
-recorded results under `golden/`.
+recorded results under `golden/`. `test_web_equivalence.py` is the exception and
+needs no goldens; see below.
 
 Run them with plain `python3`; there is nothing to install, and they work from
 any working directory.
@@ -11,6 +12,7 @@ any working directory.
 python3 tests/test_output_regression.py
 python3 tests/test_error_regression.py
 python3 tests/test_args_regression.py
+python3 tests/test_web_equivalence.py
 ```
 
 | Script | What it covers |
@@ -18,6 +20,7 @@ python3 tests/test_args_regression.py
 | `test_output_regression.py` | The four generated CSVs on the real PNW inputs, for all four CPS formats across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
 | `test_error_regression.py` | 35 malformed-input cases — bad headers, out-of-range and non-member field values, over-long names, unknown talkgroups, missing files. |
 | `test_args_regression.py` | Command-line handling: unknown options, stray positionals, `--`, option abbreviation, `--cps-format`, missing required arguments. |
+| `test_web_equivalence.py` | That `site/acb_web.py` builds exactly what the command line builds, across the formats and flags, plus the things only the web path can get wrong: CRLF survival, a stripped BOM, a deterministic zip, no stale files between builds, and a fatal error reaching the page intact. |
 
 ## Re-recording
 
@@ -57,6 +60,11 @@ with the `Text::CSV_XS` shim that let it run here.
   they meant before it existed.
 - `_golden.py` — shared plumbing: running the builder, scrubbing machine-specific
   paths out of its output, loading and saving goldens, reporting differences.
+- `test_web_equivalence.py` — no goldens of its own. The command line is the
+  oracle: every case runs both it and `site/acb_web.py` over the same files and
+  compares. So there is nothing to re-record, and nothing that can be re-recorded
+  wrong — but it does mean the test says only that the two agree, not that either
+  is right. What makes them right is the goldens above.
 
 The real CSVs in the repo root are only ever read. The error cases mutate copies
 in a temporary directory, and every run writes its output to a temporary directory

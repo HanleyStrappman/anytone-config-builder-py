@@ -36,7 +36,11 @@ pip install dist/anytone_config_builder-*.whl
 
 Either puts `anytone-config-builder` (and the shorter alias `acb`) on your PATH,
 and carries the channel-defaults files along with it, so an installed copy needs
-no `--config` and works from any directory. To build the distribution yourself:
+no `--config` and works from any directory. There is also a
+[website](#website) that runs the builder in the browser and needs no install
+at all.
+
+To build the distribution yourself:
 
 ```sh
 python -m build          # writes dist/*.whl and dist/*.tar.gz
@@ -336,12 +340,85 @@ ends option parsing, and unique option prefixes such as `--sort` are accepted.
   normalises both on import — but it is why generated and exported files differ
   on analog rows.
 
+## Website
+
+The same builder runs in a browser, for people who would rather not install
+Python at all. `site/` holds the page and `build_site.py` assembles it:
+
+```sh
+python3 build_site.py
+cd site-build && python3 -m http.server 8000
+```
+
+`site-build/` is the whole site — static files, nothing to run on the server.
+The builder is stdlib-only and therefore runs unmodified under
+[Pyodide](https://pyodide.org), so the visitor's CSVs are never uploaded; there
+is no server to upload them to. The page calls the same `cli()` the `acb`
+command does, over the same packaged channel-defaults files, so its output is
+byte-for-byte what the command line would have written.
+
+The wheel is rebuilt on every run and the page reads its version from
+`manifest.json`, so a `bump-my-version` bump reaches the site by rebuilding it
+rather than by editing anything.
+
+Pyodide comes from a CDN by default. To serve it yourself as well — for a host
+with no outbound access, or just to depend on nothing:
+
+```sh
+python3 build_site.py --with-pyodide
+```
+
+That fetches the 6MB Pyodide core build, taking `site-build/` to about 13MB.
+Only the core is needed: the builder is unpacked straight onto `sys.path`
+rather than installed with `micropip`, so none of Pyodide's bundled packages
+are wanted.
+
+### Deploying
+
+Every path in the page is relative, so the site works at a domain root, in a
+subdirectory, or under the `/<repo>/` path GitHub Pages serves a project from —
+without rebuilding.
+
+```sh
+rsync -a --delete site-build/ user@host:/var/www/acb/
+```
+
+An nginx server block. The `.wasm` type is the part that bites: nginx's stock
+`mime.types` had no entry for it before 1.21, and the wrong type stops
+WebAssembly instantiating — which only matters if you passed `--with-pyodide`.
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name acb.example.org;
+    root /var/www/acb;
+
+    types { application/wasm wasm; }
+
+    gzip on;
+    gzip_types text/css application/javascript application/json text/csv
+               text/x-python application/wasm;
+
+    location / { try_files $uri $uri/ =404; }
+
+    # The wheel carries its version in the filename, so it can cache forever;
+    # index.html must not, or a rebuild goes unnoticed.
+    location ~ \.whl$ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+}
+```
+
 ## Tests
 
 ```sh
 python3 tests/test_output_regression.py
 python3 tests/test_error_regression.py
 python3 tests/test_args_regression.py
+python3 tests/test_web_equivalence.py
 ```
 
 Golden-file regression tests covering the generated files for all four CPS
@@ -349,6 +426,10 @@ formats across all 30 combinations of `--sorting`, `--nicknames` and
 `--hotspot-tx-permit`, 35 malformed-input cases, and 21 command-line cases. They need nothing installed
 and run from any directory. See [tests/README.md](tests/README.md) for how to
 re-record them after an intentional change.
+
+The fourth is not a golden-file test: it runs the [website](#website)'s builder
+and the command line over the same inputs and asserts they cannot be told apart,
+which is the promise the website makes to someone who cannot check it themselves.
 
 ## License
 

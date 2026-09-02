@@ -1,0 +1,230 @@
+/*
+ * Anytone config builder -- the page's styling.
+ *
+ * Copyright (C) 2026 Scott Robinson (AG7T)
+ * GPL-3.  See <https://www.gnu.org/licenses/>.
+ */
+
+:root {
+    --bg: #f7f7f5;
+    --panel: #ffffff;
+    --ink: #1e2022;
+    --muted: #5d6469;
+    --line: #dcdcd6;
+    --accent: #1c5d99;
+    --ok: #1f6f43;
+    --warn: #8a5a00;
+    --fail: #a32a1e;
+    --code-bg: #f0efea;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #16181a;
+        --panel: #1f2225;
+        --ink: #e6e6e3;
+        --muted: #9aa1a7;
+        --line: #34383c;
+        --accent: #6aa9de;
+        --ok: #63c48d;
+        --warn: #d9a441;
+        --fail: #e8776a;
+        --code-bg: #26292d;
+    }
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+h1 { font-size: 1.6rem; margin: 0 0 .4rem; }
+h2 { font-size: 1.05rem; margin: 0 0 1rem; letter-spacing: .02em; }
+h3 { font-size: .85rem; margin: 0 0 .4rem; color: var(--muted); font-weight: 600; }
+
+.lede { margin: 0 0 .75rem; }
+
+.privacy {
+    margin: 0;
+    padding: .6rem .8rem;
+    border-left: 3px solid var(--accent);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: .9rem;
+}
+
+header { margin-bottom: 1.75rem; }
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.field { margin-bottom: 1.4rem; }
+.field:last-of-type { margin-bottom: 1rem; }
+
+label {
+    display: block;
+    font-weight: 600;
+    font-size: .95rem;
+    margin-bottom: .35rem;
+}
+
+.req, .opt {
+    font-weight: 400;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .05rem .35rem;
+    border-radius: 3px;
+    margin-left: .35rem;
+}
+
+.req { color: var(--fail); border: 1px solid var(--fail); }
+.opt { color: var(--muted); border: 1px solid var(--line); }
+
+input[type="file"], select {
+    width: 100%;
+    padding: .45rem .5rem;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+    font-size: .9rem;
+}
+
+.note {
+    margin: .4rem 0 0;
+    font-size: .85rem;
+    color: var(--muted);
+}
+
+.note.important {
+    border-left: 3px solid var(--warn);
+    padding-left: .7rem;
+}
+
+.chosen {
+    margin: .35rem 0 0;
+    font-size: .85rem;
+    color: var(--ok);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.chosen:empty { display: none; }
+
+button {
+    font: inherit;
+    font-weight: 600;
+    padding: .55rem 1.1rem;
+    border: 1px solid var(--accent);
+    border-radius: 5px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+#examples {
+    background: transparent;
+    color: var(--accent);
+}
+
+.panel-run {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+#build { font-size: 1.05rem; padding: .65rem 1.8rem; }
+
+.status { margin: 0; font-size: .9rem; color: var(--muted); }
+.status-ready { color: var(--ok); }
+.status-failed { color: var(--fail); }
+
+.outcome { margin: 0 0 1rem; font-size: 1.1rem; }
+.outcome-ok { color: var(--ok); }
+.outcome-failed { color: var(--fail); }
+
+.filelist {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    border-top: 1px solid var(--line);
+}
+
+.filelist li {
+    display: flex;
+    justify-content: space-between;
+    padding: .4rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: .9rem;
+}
+
+.filelist code { font-size: .9rem; }
+.filelist span { color: var(--muted); }
+
+a.download {
+    display: inline-block;
+    padding: .6rem 1.3rem;
+    border-radius: 5px;
+    background: var(--ok);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.stream { margin-top: 1.25rem; }
+
+.stream pre {
+    margin: 0;
+    padding: .7rem .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    border-left: 3px solid var(--line);
+    /* The builder's messages name the file and the line, and wrapping them
+       mid-path makes them much harder to act on -- so they scroll instead. */
+    overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .82rem;
+    line-height: 1.5;
+}
+
+.stream-error pre { border-left-color: var(--fail); }
+.stream-warning pre { border-left-color: var(--warn); }
+.stream-notice pre { border-left-color: var(--accent); }
+
+code {
+    background: var(--code-bg);
+    padding: .1rem .3rem;
+    border-radius: 3px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: .85em;
+}
+
+.advice { margin: 0; padding-left: 1.2rem; font-size: .9rem; }
+.advice li { margin-bottom: .6rem; }
+.advice li:last-child { margin-bottom: 0; }
+
+footer {
+    color: var(--muted);
+    font-size: .85rem;
+    text-align: center;
+}
+
+footer p { margin: .2rem 0; }
