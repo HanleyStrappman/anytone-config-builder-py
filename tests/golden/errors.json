@@ -164,6 +164,74 @@
     },
     "output": "ERROR: Invalid TX Prohibit: 'Yes' is not one of: On, Off [On line #1 of Analog file.]\n"
   },
+  "cap-am-channels": {
+    "exit": 255,
+    "files": {
+      "Channel.CSV": "a7de0ecf325a080d2b91c58bd73efb4cec7e103c9b326045d8eda0ba4b29dcb6",
+      "DMRTalkGroups.CSV": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "DMRZones.CSV": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b",
+      "ScanList.CSV": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e"
+    },
+    "output": "ERROR: Too many airband channels: the radio holds at most 256. [On line #257 of Airband file.]\n"
+  },
+  "cap-am-zones": {
+    "exit": 255,
+    "files": {
+      "Channel.CSV": "a7de0ecf325a080d2b91c58bd73efb4cec7e103c9b326045d8eda0ba4b29dcb6",
+      "DMRTalkGroups.CSV": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "DMRZones.CSV": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b",
+      "ScanList.CSV": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e"
+    },
+    "output": "ERROR: Too many airband zones: the radio holds at most 16. [On line #17 of Airband file.]\n"
+  },
+  "cap-am-zones-at-limit": {
+    "exit": 0,
+    "files": {
+      "AMAir.CSV": "210dc32164c80f97e39bad646597d872ab37cf5ad9a71d7d3e626150b46d4dfb",
+      "AMZone.CSV": "8bec6f87d33f8f660b60a6b6dfb6060ac535b00778e7b1f43798032620f1b910",
+      "Channel.CSV": "a7de0ecf325a080d2b91c58bd73efb4cec7e103c9b326045d8eda0ba4b29dcb6",
+      "DMRTalkGroups.CSV": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "DMRZones.CSV": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b",
+      "ScanList.CSV": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e"
+    },
+    "output": ""
+  },
+  "cap-channels": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "c6a8a9aeb206e9d94985feb13923eb64b63cdf6b1c1290e752906135d55c4a20"
+    },
+    "output": "ERROR: Too many channels: the radio holds at most 4000, and this input makes more. [On line #40 of Digital-Repeater file.]\n"
+  },
+  "cap-scanlists": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "b2f8b13d6a0de15ed1bcb3c3b23e6f22b2fa9307b6cd02e6ea5cf992ca152f38"
+    },
+    "output": "ERROR: Too many scanlists: making scanlist 'TG0249' would pass the radio's limit of 250. [On line #1 of Digital-Repeater file.]\n"
+  },
+  "cap-talkgroups": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: Too many talkgroups: the radio holds at most 10000. [On line #10000 of Talkgroup file.]\n"
+  },
+  "cap-zones": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "165dbd182bc16222ea9a4bbed0e0f77e7b8bca2dd239eba3c9651740f32ae754"
+    },
+    "output": "ERROR: Too many zones: making zone 'Zone 249' would pass the radio's limit of 250. [On line #249 of Digital-Repeater file.]\n"
+  },
+  "cap-zones-at-limit": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "80665886fb5c0b8499cbfb5296266c7876549523ff9f3eded1688f7fb7c92a73",
+      "scanlists.csv": "c1f582c7cf8b444622c4bf857f3fd5db39d6ddff474406fb410cffc9d5467d07",
+      "talkgroups.csv": "9d24e1f3e7feef2c2558fb4abbc814118a6e2d9f79f9c9fd5b4b2df5c78325bf",
+      "zones.csv": "43e1ddfa851f8057bd571ad9331248466e9ad7a19176ff3b1331326d75c35065"
+    },
+    "output": "WARNING: Scanlist 'TG0001' has more than 50 channels. It has been truncated to the first 50 channels to keep the CPS software happy.\n"
+  },
   "chan-name-no-fit": {
     "exit": 0,
     "files": {
@@ -274,6 +342,56 @@
       "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be"
     },
     "output": "ERROR: There are too many columns in 'Digital-Others' file, line 1.\n"
+  },
+  "oversized-field": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b"
+    },
+    "output": "ERROR: Couldn't parse the Analog file near line 2: field larger than field limit (4096)\n"
+  },
+  "oversized-file": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b"
+    },
+    "output": "ERROR: Input file '<in>/analog.csv' is 12120088 bytes, over the 10MB limit.\n"
+  },
+  "short-row-airband": {
+    "exit": 255,
+    "files": {
+      "Channel.CSV": "a7de0ecf325a080d2b91c58bd73efb4cec7e103c9b326045d8eda0ba4b29dcb6",
+      "DMRTalkGroups.CSV": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "DMRZones.CSV": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b",
+      "ScanList.CSV": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e"
+    },
+    "output": "ERROR: This row of the Airband file has fewer than the 3 columns expected. [On line #2 of Airband file.]\n"
+  },
+  "short-row-analog": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "3824195f3ca78e03e64e74599b128a2f4dd95cbff6a03e906c910af109402e3b"
+    },
+    "output": "ERROR: Line 1 of the 'Analog' file has fewer columns than the 9 in the header row.\n"
+  },
+  "short-row-others": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "ca7c0798684811959a7ac137962f3a041cb7ba67d45617f6d6226929015df5be"
+    },
+    "output": "ERROR: Line 1 of the 'Digital-Others' file has fewer columns than the 10 in the header row.\n"
+  },
+  "short-row-repeaters": {
+    "exit": 255,
+    "files": {
+      "channels.csv": "69901d8bcda1adc88ab3143a18a76e88b81f7eec07ed76ed2ef538379545ac74"
+    },
+    "output": "ERROR: Line 1 of the 'Digital-Repeater' file has fewer columns than the 6 in the header row.\n"
+  },
+  "short-row-talkgroups": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: A talkgroup row needs both a name and a number. [On line #0 of Talkgroup file.]\n"
   },
   "tg-call-type-conflict": {
     "exit": 255,

@@ -14,6 +14,11 @@ const REQUIRED = ["analog", "digital_others", "digital_repeaters", "talkgroups"]
 const OPTIONAL = ["am_air"];
 const ROLES = REQUIRED.concat(OPTIONAL);
 
+// Keep in step with MAX_INPUT_FILE_BYTES in builder.py, which is the limit that
+// actually applies -- this one only saves reading a file the builder will refuse
+// anyway, and saves it landing in the wasm heap on the way.
+const MAX_INPUT_BYTES = 10 * 1024 * 1024;
+
 // role -> {name, buffer}, or null for "not supplied".
 const chosen = {};
 ROLES.forEach((role) => { chosen[role] = null; });
@@ -259,6 +264,20 @@ async function start() {
                 chosen[role] = null;
                 showChosen(role);
                 refreshAndAnnounce();
+                return;
+            }
+            if (file.size > MAX_INPUT_BYTES) {
+                chosen[role] = null;
+                showChosen(role);
+                // Clear the picker too, so its label cannot keep naming a file
+                // this page is not holding.
+                event.target.value = "";
+                // Not refreshAndAnnounce(), which would overwrite this with the
+                // "still needed" line before it had been read.
+                setStatus(file.name + " is "
+                          + humanSize(file.size) + ", over the "
+                          + humanSize(MAX_INPUT_BYTES) + " limit.", "failed");
+                refreshBuildButton();
                 return;
             }
             file.arrayBuffer().then((buffer) => {

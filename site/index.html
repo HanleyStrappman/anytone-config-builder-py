@@ -2,6 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<!--
+  Everything this page loads is its own, so the policy is 'self' throughout;
+  'wasm-unsafe-eval' is what Pyodide needs to compile its WebAssembly.  A build
+  made with --pyodide-cdn also needs cdn.jsdelivr.net in script-src and
+  connect-src.
+
+  This tag covers the document only.  The worker -- where Pyodide is actually
+  loaded and compiled -- takes its policy from the HTTP headers its own script
+  is served with, so serving these as real headers is what constrains it.  See
+  the CSP section of the README.
+-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anytone Config Builder</title>
 <link rel="stylesheet" href="./acb-web.css">

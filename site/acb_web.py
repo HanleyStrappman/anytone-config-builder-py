@@ -36,7 +36,7 @@ import traceback
 import zipfile
 
 from anytone_config_builder import __version__
-from anytone_config_builder.builder import cli
+from anytone_config_builder.builder import MAX_INPUT_FILE_BYTES, cli
 
 IN_DIRECTORY = "/work/in"
 OUT_DIRECTORY = "/work/out"
@@ -160,6 +160,18 @@ def build(options_json):
     if missing:
         return _result(False, stdout="", stderr="",
                        error="Missing required input files: " + ", ".join(missing))
+
+    # Ahead of _normalise(), which reads a whole file into memory: the page checks
+    # the same limit before it writes anything, so reaching this means the file
+    # grew or arrived some other way, but the wasm heap is small enough to be
+    # worth refusing here too rather than trusting the caller.
+    for role in present:
+        size = os.path.getsize(input_path(role))
+        if size > MAX_INPUT_FILE_BYTES:
+            limit_mb = MAX_INPUT_FILE_BYTES // (1024 * 1024)
+            return _result(False, stdout="", stderr="",
+                           error=f"The {role} file is {size} bytes, over the "
+                                 f"{limit_mb}MB limit.")
 
     for role in present:
         _normalise(input_path(role))

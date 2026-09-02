@@ -58,6 +58,48 @@ def both(*mutations):
 ANALOG_ROW = "APRS - Analog,146.500 aprs,25K,High,146.5,146.5,Off,Off,Off"
 OTHERS_ROW = "Simplex,Sim V01  145.790,High,145.79,145.79,1,Local 1,1,Group Call,Always"
 REPEATER_ROW = "Ariel/Ariel VHF;ARA,,High,147.4125,146.4125,1,1,2,1"
+ANALOG_HEADER = ("Zone,Channel Name,Bandwidth,Power,RX Freq,TX Freq,"
+                 "CTCSS Decode,CTCSS Encode,TX Prohibit\n")
+
+# The three talkgroups the fixture others.csv and repeaters.csv name.  A generated
+# talkgroup file has to keep them, or the run stops on an undefined talkgroup
+# before it ever reaches the limit the case is about.
+TALKGROUPS_FIXED = "Local 1,3181\nPNW 2,31771\nParrot 1,9998\n"
+
+# The table-size cases need inputs far larger than a fixture worth checking in, so
+# they are generated.  Names are kept short deliberately: a zone is capped at 16
+# characters, and a matrix channel name is the zone nickname plus the talkgroup.
+
+
+def make_talkgroups(count):
+    return TALKGROUPS_FIXED + "".join(f"TG{i:04d},{100000 + i}\n"
+                                      for i in range(1, count + 1))
+
+
+def make_repeaters(rows, tgs):
+    """A repeaters matrix of `rows` repeaters by `tgs` talkgroups.
+
+    One zone per row and one scanlist per talkgroup column, so rows and columns
+    pick which of the three limits a case lands on -- and rows * tgs is roughly
+    the channel count.
+    """
+    names = [f"TG{i:04d}" for i in range(1, tgs + 1)]
+    out = ["Zone Name,Comment,Power,RX Freq,TX Freq,Color Code," + ",".join(names)]
+    out += [f"Zone {i:03d};Z{i:03d},,High,147.4125,146.4125,1" + ",1" * tgs
+            for i in range(1, rows + 1)]
+    return "\n".join(out) + "\n"
+
+
+def make_airband(zones, per_zone):
+    out = ["Zone,Channel Name,Frequency"]
+    n = 0
+    for zone in range(1, zones + 1):
+        for _ in range(per_zone):
+            n += 1
+            # Distinct name and frequency per channel: a repeated name is one
+            # channel in two zones, and a repeated frequency is a clash error.
+            out.append(f"AM Zone {zone:02d},AM Chan {n:04d},{118 + (n % 200) / 1000:.3f}")
+    return "\n".join(out) + "\n"
 
 # Format 3 is the one that actually reads the airband pair, so the airband cases
 # use it and their output is the airband error alone, not a format warning too.
@@ -125,6 +167,42 @@ CASES = [
     ("airband-long-name",   edit("airband.csv", "ASOS,135.675",
                                  "ASOS Pullman Regional,135.675"), AIRBAND_ARGS),
     ("airband-missing",     rm("airband.csv"), AIRBAND_ARGS),
+
+    # ---- radio table sizes: over the limit stops the run, at the limit does not ----
+    ("cap-channels",        both(write("repeaters.csv", make_repeaters(42, 100)),
+                                 write("talkgroups.csv", make_talkgroups(100))), None),
+    ("cap-zones",           both(write("repeaters.csv", make_repeaters(251, 1)),
+                                 write("talkgroups.csv", make_talkgroups(1))), None),
+    ("cap-scanlists",       both(write("repeaters.csv", make_repeaters(1, 251)),
+                                 write("talkgroups.csv", make_talkgroups(251))), None),
+    ("cap-talkgroups",      write("talkgroups.csv", make_talkgroups(10001)), None),
+    ("cap-am-channels",     write("airband.csv", make_airband(16, 17)), AIRBAND_ARGS),
+    ("cap-am-zones",        write("airband.csv", make_airband(17, 1)), AIRBAND_ARGS),
+
+    # Sitting exactly on a limit has to still build, or the check is off by one.
+    # 246 repeater zones plus the fixtures' two others and two analog zones is
+    # exactly 250, so a 247th is what the cap-zones case above is really testing.
+    ("cap-zones-at-limit",  both(write("repeaters.csv", make_repeaters(246, 1)),
+                                 write("talkgroups.csv", make_talkgroups(1))), None),
+    ("cap-am-zones-at-limit", write("airband.csv", make_airband(16, 2)), AIRBAND_ARGS),
+
+    # ---- malformed rows and files: reported, rather than reaching a traceback ----
+    # Every reader picks its columns by position, so a row that stops early used
+    # to walk off the end of the list.
+    ("short-row-analog",    edit("analog.csv", ANALOG_ROW,
+                                 "APRS - Analog,146.500 aprs,25K"), None),
+    ("short-row-others",    edit("others.csv", OTHERS_ROW,
+                                 "Simplex,Sim V01  145.790,High"), None),
+    ("short-row-repeaters", edit("repeaters.csv", REPEATER_ROW,
+                                 "Ariel/Ariel VHF;ARA,,High"), None),
+    ("short-row-talkgroups", edit("talkgroups.csv", "Local 1,3181", "Local 1"), None),
+    ("short-row-airband",   edit("airband.csv", "Air Zone 1,ASOS,135.675", "ASOS"),
+                            AIRBAND_ARGS),
+
+    # csv raises on a field this long rather than returning it.
+    ("oversized-field",     edit("analog.csv", "146.500 aprs", "A" * 5000), None),
+    ("oversized-file",      write("analog.csv", ANALOG_HEADER
+                                  + ("x" * 100 + "\n") * 120000), None),
 
     # ---- missing / unreadable files ----
     ("missing-analog",      rm("analog.csv"), None),

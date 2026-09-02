@@ -21,8 +21,8 @@
 # vendoring, and "Python 3 and nothing else" then holds for the website too --
 # on Windows as much as on macOS and Linux.
 #
-#     python3 build_site.py                  # site-build/, Pyodide from the CDN
-#     python3 build_site.py --with-pyodide   # ... with Pyodide served locally
+#     python3 build_site.py                  # site-build/, Pyodide served locally
+#     python3 build_site.py --pyodide-cdn    # ... with Pyodide from a CDN
 #
 import argparse
 import json
@@ -139,8 +139,13 @@ def vendor_pyodide():
 def main():
     parser = argparse.ArgumentParser(
         description="Assemble the acb web front end into site-build/.")
-    parser.add_argument("--with-pyodide", action="store_true",
-                        help="serve Pyodide from the site instead of a CDN")
+    # Serving Pyodide from the site is the default because the alternative is
+    # trusting a third party with the whole page: importScripts() carries no
+    # integrity attribute, so a CDN that served something else would be running
+    # its own code, same origin, over whatever files the user picked.
+    parser.add_argument("--pyodide-cdn", action="store_true",
+                        help="load Pyodide from a CDN instead of serving it "
+                             "(smaller upload, but see the CSP note in README)")
     args = parser.parse_args()
 
     if not SITE.is_dir():
@@ -150,11 +155,15 @@ def main():
 
     print(f"Assembling {BUILD.name}/…")
     shutil.rmtree(BUILD, ignore_errors=True)
-    shutil.copytree(SITE, BUILD)
+    # Ignoring the bytecode the test suite leaves behind when it imports
+    # site/acb_web.py: it is stale the moment it is copied, and this directory
+    # gets published as-is.
+    shutil.copytree(SITE, BUILD,
+                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     shutil.copy2(wheel, BUILD / wheel.name)
 
     examples = copy_examples()
-    index_url = vendor_pyodide() if args.with_pyodide else PYODIDE_CDN
+    index_url = PYODIDE_CDN if args.pyodide_cdn else vendor_pyodide()
 
     # Everything the page needs to know that changes between builds, so that a
     # version bump means rebuilding rather than editing JavaScript.
@@ -169,7 +178,10 @@ def main():
     total = sum(f.stat().st_size for f in BUILD.rglob("*") if f.is_file())
     print(f"\n{BUILD.name}/ ready -- {total / 1024 / 1024:.1f} MB, "
           f"builder {manifest['version']}, Pyodide from "
-          f"{'the site' if args.with_pyodide else 'the CDN'}")
+          f"{'a CDN' if args.pyodide_cdn else 'the site'}")
+    if args.pyodide_cdn:
+        print("  note: a CDN build needs cdn.jsdelivr.net in script-src and "
+              "connect-src.\n        See the CSP section of the README.")
     print(f"\nTry it:  cd {BUILD.name} && {os.path.basename(sys.executable)} "
           f"-m http.server 8000")
 

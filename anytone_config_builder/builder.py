@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#co!/usr/bin/env python3
 #
 # Anytone config builder -- helps create codeplugs for Anytone (and similar)
 # DMR radios.
@@ -78,6 +78,28 @@ VAL_CTCSS_DCS = "CTCSS/DCS"
 VAL_DMR_MODE_SIMPLEX = 0
 VAL_DMR_MODE_REPEATER = 1
 LENGTH_CHAN_NAME = 16
+
+# AT-D890UV table sizes.  These are hardware limits, not CPS ones, so they apply
+# whichever --cps-format is in use: a codeplug over any of them is one the radio
+# cannot import, which makes exceeding one an error rather than something to
+# truncate and warn about.  (The per-zone and per-scanlist *member* limits in
+# generic_row_builder() are a different thing and stay warnings.)
+MAX_CHANNELS = 4000
+MAX_ZONES = 250
+MAX_SCANLISTS = 250
+MAX_TALKGROUPS = 10000
+MAX_AM_CHANNELS = 256
+MAX_AM_ZONES = 16
+
+# Nothing legitimate comes close: the largest real input in the examples is a few
+# hundred KB.  The cap is here so a hostile or corrupt file can't be read into
+# memory in the first place -- it matters most in the browser build, where the
+# whole file lands in the wasm heap.
+MAX_INPUT_FILE_BYTES = 10 * 1024 * 1024
+
+# Likewise, no legitimate field is more than a few dozen characters.  csv's own
+# default is 128KiB, which a single quoted field can reach on its own.
+MAX_CSV_FIELD_BYTES = 4096
 
 
 ################################################################################
@@ -288,9 +310,37 @@ def perl_split(sep, value):
 
 def open_csv_read(filename):
     try:
-        return open(filename, newline="", encoding="utf-8")
+        fh = open(filename, newline="", encoding="utf-8")
     except OSError as exc:
         raise ConfigError(f"Couldn't open file '{filename}': {exc.strerror}\n")
+
+    # Checked on the open file rather than the path, so this is the file that was
+    # actually opened, not whatever the name pointed at a moment ago.
+    size = os.fstat(fh.fileno()).st_size
+    if size > MAX_INPUT_FILE_BYTES:
+        fh.close()
+        raise ConfigError(f"Input file '{filename}' is {size} bytes, over the "
+                          f"{MAX_INPUT_FILE_BYTES // (1024 * 1024)}MB limit.\n")
+
+    return fh
+
+
+def csv_records(fh, file_nickname):
+    """csv.reader that reports a parse failure as a ConfigError, not a traceback.
+
+    csv raises on an over-long field, which is the one malformed-input case it
+    treats as fatal rather than something to muddle through.
+    """
+    reader = csv.reader(fh)
+    while True:
+        try:
+            row = next(reader)
+        except StopIteration:
+            return
+        except csv.Error as exc:
+            raise ConfigError(f"Couldn't parse the {file_nickname} file near line "
+                              f"{reader.line_num}: {exc}\n")
+        yield row
 
 
 def csv_writer(fh):
@@ -800,9 +850,13 @@ class ConfigBuilder:
     #####
     def read_channel_csv_default(self, filename):
         with open_csv_read(filename) as fh:
-            for row in csv.reader(fh):
+            for row in csv_records(fh, "channel-defaults"):
                 if not row:
                     continue
+                if len(row) < 3:
+                    raise ConfigError(f"A row of the channel-defaults file "
+                                      f"'{filename}' has fewer than the 3 columns "
+                                      f"expected.\n")
                 index = int(perl_num(row[0]))
                 self.channel_csv_field_name[index] = row[1]
                 self.channel_csv_default_value[index] = row[2]
@@ -824,7 +878,7 @@ class ConfigBuilder:
 
         try:
             with open_csv_read(filename) as fh:
-                for line_no, row in enumerate(csv.reader(fh)):
+                for line_no, row in enumerate(csv_records(fh, "Airband")):
                     if not row:
                         continue
                     self.line_number = line_no
@@ -839,10 +893,21 @@ class ConfigBuilder:
                         continue
 
                     ctx = self._file_and_line()
+                    if len(row) < len(header):
+                        raise ConfigError(f"This row of the Airband file has fewer "
+                                          f"than the {len(header)} columns expected."
+                                          + ctx)
+
                     zone = validate_zone(row[0], ctx)
                     name = _validate_string_length("Airband Channel Name", row[1],
                                                    LENGTH_AM_NAME, ctx)
                     freq = f"{float(validate_freq(row[2], ctx)):.{AM_FREQ_DECIMALS}f}"
+
+                    # Ahead of the clash check below: a name already in the table is
+                    # not a new channel, so it should report the clash, not the cap.
+                    if name not in self.am_air and len(self.am_air) >= MAX_AM_CHANNELS:
+                        raise ConfigError(f"Too many airband channels: the radio "
+                                          f"holds at most {MAX_AM_CHANNELS}." + ctx)
 
                     # The table is keyed by name, so one name cannot hold two
                     # frequencies -- that has to be the input being wrong.
@@ -851,6 +916,10 @@ class ConfigBuilder:
                             f"Airband channel '{name}' is {self.am_air[name]} MHz "
                             f"elsewhere, but {freq} MHz here. One name cannot be two "
                             f"frequencies." + ctx)
+
+                    if zone not in self.am_zone_config and len(self.am_zone_config) >= MAX_AM_ZONES:
+                        raise ConfigError(f"Too many airband zones: the radio holds "
+                                          f"at most {MAX_AM_ZONES}." + ctx)
 
                     members = self.am_zone_config.setdefault(zone, [])
                     if name not in members:
@@ -867,10 +936,14 @@ class ConfigBuilder:
         originals = {}
         try:
             with open_csv_read(filename) as fh:
-                for index, row in enumerate(csv.reader(fh), start=1):
+                for index, row in enumerate(csv_records(fh, "Talkgroup"), start=1):
                     if not row:
                         continue
                     self.line_number = index - 1
+                    if len(row) < 2:
+                        raise ConfigError("A talkgroup row needs both a name and a "
+                                          "number." + self._file_and_line())
+
                     name = validate_contact(row[0], self._file_and_line())
 
                     if originals.get(name, row[0]) != row[0]:
@@ -878,6 +951,12 @@ class ConfigBuilder:
                                 f"shorten to '{name}', so the radio cannot tell them "
                                 f"apart. Using the last one.")
                     originals[name] = row[0]
+
+                    if (name not in self.talkgroup_mapping
+                            and len(self.talkgroup_mapping) >= MAX_TALKGROUPS):
+                        raise ConfigError(f"Too many talkgroups: the radio holds at "
+                                          f"most {MAX_TALKGROUPS}."
+                                          + self._file_and_line())
 
                     # A stray space around an ID reaches both channels.csv and
                     # talkgroups.csv, where the CPS wants a bare number.
@@ -911,7 +990,7 @@ class ConfigBuilder:
 
         zone_order_index = 1
         with open_csv_read(filename) as fh:
-            for line_no, row in enumerate(csv.reader(fh)):
+            for line_no, row in enumerate(csv_records(fh, file_nickname)):
                 if not row:
                     continue
                 self.line_number = line_no
@@ -931,10 +1010,23 @@ class ConfigBuilder:
 
                     # If this is going to be a matrix'd CSV, those headers will follow the main
                     # headers
+                    #
+                    # No cap of its own on how many there are: a row times a column
+                    # is a channel, so MAX_CHANNELS bounds the product, MAX_SCANLISTS
+                    # bounds the columns that produce anything, and the file size
+                    # limit bounds this list -- all while streaming, so none of them
+                    # lets a big allocation happen first.
                     headers.extend(row[len(header):])
                     continue
 
                 ## Process an actual data row...
+                # Ahead of the extractor, which reads its columns by position and
+                # would otherwise walk off the end of a short row.
+                if len(row) < len(header):
+                    raise ConfigError(
+                        f"Line {line_no} of the '{file_nickname}' file has fewer "
+                        f"columns than the {len(header)} in the header row.\n")
+
                 chan_config = field_extractor(row)
                 zone_name = chan_config[CHAN_SCANLIST_NAME]
 
@@ -981,6 +1073,13 @@ class ConfigBuilder:
                 zone_order_index += 1
 
     def add_channel(self, out, chan_config, zone_name, scanlist_name, zone_order_index):
+        # channel_number is the number this call is about to assign, so being over
+        # the limit here means this channel would be the first one too many.
+        if self.channel_number > MAX_CHANNELS:
+            raise ConfigError(f"Too many channels: the radio holds at most "
+                              f"{MAX_CHANNELS}, and this input makes more."
+                              + self._file_and_line())
+
         output = []
 
         for column in sorted(self.channel_csv_default_value):
@@ -1011,6 +1110,13 @@ class ConfigBuilder:
             self.build_talkgroup_config(chan_config, zone_name)
 
     def build_zone_config(self, chan_config, zone_name, zone_order_index):
+        # zone_order is written on every channel, so it says nothing about whether
+        # this zone is new.  zone_config is the table that has to fit the radio.
+        if zone_name not in self.zone_config and len(self.zone_config) >= MAX_ZONES:
+            raise ConfigError(f"Too many zones: making zone '{zone_name}' would pass "
+                              f"the radio's limit of {MAX_ZONES}."
+                              + self._file_and_line())
+
         self.zone_order[zone_name] = zone_order_index
 
         order = self.channel_order_name(chan_config)
@@ -1021,6 +1127,12 @@ class ConfigBuilder:
                        str(chan_config[CHAN_TX_FREQ])]))
 
     def build_scanlist_config(self, chan_config, scanlist_name):
+        if (scanlist_name not in self.scanlist_config
+                and len(self.scanlist_config) >= MAX_SCANLISTS):
+            raise ConfigError(f"Too many scanlists: making scanlist "
+                              f"'{scanlist_name}' would pass the radio's limit of "
+                              f"{MAX_SCANLISTS}." + self._file_and_line())
+
         order = self.channel_order_name(chan_config)
         self.scanlist_config.setdefault(scanlist_name, []).append(
             "\t".join([order,
@@ -1230,6 +1342,10 @@ def handle_command_line_args(argv):
 
 
 def main(argv=None):
+    # Process-global, so it is set here rather than at import: a program that
+    # imports the builder as a library keeps csv's own default.
+    csv.field_size_limit(MAX_CSV_FIELD_BYTES)
+
     args = handle_command_line_args(sys.argv[1:] if argv is None else argv)
 
     builder = ConfigBuilder(sort_mode=args.sorting,

@@ -275,6 +275,33 @@ names below are what formats `0` to `2` write; format `3` writes the same four a
 The CPS caps a scanlist at 50 channels and a zone at 250. Anything longer is
 truncated with a warning on stdout.
 
+### Radio limits
+
+How many of each thing the radio itself holds is a different matter, and going
+over one is an error rather than something to truncate: the CPS would refuse
+the import anyway, and quietly dropping the four-thousand-and-first channel is
+a worse answer than saying so. The numbers are the AT-D890UV's, applied
+whichever `--cps-format` you build for:
+
+| | limit |
+|---|---|
+| channels | 4000 |
+| zones | 250 |
+| scanlists | 250 |
+| talkgroups | 10000 |
+| airband channels | 256 |
+| airband zones | 16 |
+
+Each is checked as the input is read, so the message names the file and line
+that went over. Talkgroups are counted as *defined* in the talkgroups file,
+not as referenced by a channel.
+
+An input file over 10MB, or a single CSV field over 4096 bytes, is refused
+before it is parsed. Neither is a size any real codeplug input approaches; the
+limits are there so a corrupt or hostile file is turned away rather than read
+into memory — which matters most in the browser, where it lands in the wasm
+heap.
+
 The `--config` directory supplies the value for every CPS field the inputs don't
 mention, in a file per CPS format. It defaults to `anytone_config_builder/config`
 inside the package, wherever that package happens to live. To change defaults
@@ -361,17 +388,24 @@ The wheel is rebuilt on every run and the page reads its version from
 `manifest.json`, so a `bump-my-version` bump reaches the site by rebuilding it
 rather than by editing anything.
 
-Pyodide comes from a CDN by default. To serve it yourself as well — for a host
-with no outbound access, or just to depend on nothing:
+Pyodide is served from the site itself. `build_site.py` fetches the 6MB core
+build, which takes `site-build/` to about 13MB — only the core is needed, since
+the builder is unpacked straight onto `sys.path` rather than installed with
+`micropip`, so none of Pyodide's bundled packages are wanted.
+
+It is served rather than linked because a worker loads it with
+`importScripts()`, which takes no `integrity` attribute: there is no way to
+pin what a CDN returns. Whatever it served would run in the worker, same
+origin, over whatever CSVs the visitor picked. Hosting it removes the question.
+
+If you would rather have the smaller upload and accept that:
 
 ```sh
-python3 build_site.py --with-pyodide
+python3 build_site.py --pyodide-cdn
 ```
 
-That fetches the 6MB Pyodide core build, taking `site-build/` to about 13MB.
-Only the core is needed: the builder is unpacked straight onto `sys.path`
-rather than installed with `micropip`, so none of Pyodide's bundled packages
-are wanted.
+A CDN build needs `https://cdn.jsdelivr.net` added to both `script-src` and
+`connect-src` in the policy below, and in the `<meta>` tag in `site/index.html`.
 
 ### Deploying
 
@@ -385,7 +419,9 @@ rsync -a --delete site-build/ user@host:/var/www/acb/
 
 An nginx server block. The `.wasm` type is the part that bites: nginx's stock
 `mime.types` had no entry for it before 1.21, and the wrong type stops
-WebAssembly instantiating — which only matters if you passed `--with-pyodide`.
+WebAssembly instantiating. With `nosniff` set below it is no longer merely
+likely to break — a `.wasm` served as the wrong type will not be sniffed back
+into working — so keep the `types` line.
 
 ```nginx
 server {
@@ -399,18 +435,45 @@ server {
     gzip_types text/css application/javascript application/json text/csv
                text/x-python application/wasm;
 
+    # Everything the page loads is its own; 'wasm-unsafe-eval' is what Pyodide
+    # needs to compile its WebAssembly.  Kept in one file because add_header is
+    # not additive: a location block that sets any header of its own drops every
+    # add_header inherited from here, so each one below has to include it again.
+    include /etc/nginx/snippets/acb-security-headers.conf;
+
     location / { try_files $uri $uri/ =404; }
 
     # The wheel carries its version in the filename, so it can cache forever;
     # index.html must not, or a rebuild goes unnoticed.
     location ~ \.whl$ {
+        include /etc/nginx/snippets/acb-security-headers.conf;
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
     location = /index.html {
+        include /etc/nginx/snippets/acb-security-headers.conf;
         add_header Cache-Control "no-cache";
     }
 }
 ```
+
+`/etc/nginx/snippets/acb-security-headers.conf`:
+
+```nginx
+add_header Content-Security-Policy "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'" always;
+add_header X-Content-Type-Options nosniff always;
+add_header Referrer-Policy no-referrer always;
+```
+
+`site/index.html` carries the same policy in a `<meta>` tag, so the page is
+covered even on a host you do not control. That tag is not a substitute for the
+header: it applies to the document alone, and a dedicated worker takes its
+policy from the headers its *own script* is served with. Since the worker is
+where Pyodide is loaded and compiled, the header is what actually constrains
+the part that matters.
+
+No `Cross-Origin-Opener-Policy` or `Cross-Origin-Embedder-Policy`: nothing here
+uses `SharedArrayBuffer`, so cross-origin isolation would cost compatibility
+and buy nothing.
 
 ## Tests
 
@@ -423,7 +486,7 @@ python3 tests/test_web_equivalence.py
 
 Golden-file regression tests covering the generated files for all four CPS
 formats across all 30 combinations of `--sorting`, `--nicknames` and
-`--hotspot-tx-permit`, 35 malformed-input cases, and 21 command-line cases. They need nothing installed
+`--hotspot-tx-permit`, 55 malformed-input cases, and 24 command-line cases. They need nothing installed
 and run from any directory. See [tests/README.md](tests/README.md) for how to
 re-record them after an intentional change.
 
