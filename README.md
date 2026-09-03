@@ -3,6 +3,10 @@
 Builds the four channel, zone, scanlist and talkgroup files that the Anytone CPS
 imports, from four readable CSV inputs you can keep under version control.
 
+The DMR and analog files are available on the
+[PNWDigital.net](https://pnwdigital.net/files/) site.
+You will need to generate the airband files yourself.
+
 Codeplug files are opaque: hard to diff, hard to audit, hard to prune, and easy
 to get subtly wrong by hand. Keeping the *source* of your codeplug as CSV and
 generating the rest means adding a repeater is one new row rather than an
