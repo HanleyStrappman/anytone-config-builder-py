@@ -52,7 +52,7 @@ include = [
 # It is a release-time tool, not a dependency: nothing the package installs
 # needs it, so it is deliberately not in [project].
 [tool.bumpversion]
-current_version = "1.1.1"
+current_version = "1.2.0"
 allow_dirty = false
 commit = true
 message = "Bump version: {current_version} -> {new_version}"
