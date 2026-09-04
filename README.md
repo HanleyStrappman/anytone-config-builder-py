@@ -103,7 +103,7 @@ ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On l
 | `--sorting` | `alpha` | `alpha`, `repeaters-first`, or `analog-first`. |
 | `--nicknames` | `prefix` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
 | `--hotspot-tx-permit` | `same-color-code` | `same-color-code` or `always`. |
-| `--cps-format` | `1` | `0`, `1`, `2` or `3`. Which CPS layout to write. |
+| `--cps-format` | `1` | `0` through `4`. Which CPS layout to write. |
 
 `--sorting` controls zone order: `alpha` sorts every zone by name, while
 `repeaters-first` and `analog-first` put the repeater zones before or after the
@@ -117,18 +117,18 @@ TX frequencies match, which is what a hotspot wants.
 CPS versions disagree about the shape of the import files, and which shape yours
 wants is a property of the CPS rather than of the radio — a newer CPS for the
 same radio can read a different layout. So the layouts are numbered, and
-`--cps-format` picks one. Formats `0` to `2` agree on the file names and differ
-only in contents; format `3` writes the names AT-D890UV CPS 1.05 uses.
+`--cps-format` picks one. Formats `0` to `2` and `4` agree on the file names and
+differ only in contents; format `3` writes the names AT-D890UV CPS 1.05 uses.
 
-| | `0` | `1` | `2` | `3` |
-| --- | --- | --- | --- | --- |
-| Verified against | AT-D868UV CPS | the Perl original | AT-D878UVII, and AT-D878UV on later firmware | AT-D890UV CPS 1.05 |
-| Channel file | `channels.csv`, 38 columns | `channels.csv`, 51 | `channels.csv`, 55 | `Channel.CSV`, 77 |
-| Zone file | `zones.csv`, 5 columns | `zones.csv`, 11 | `zones.csv`, 12 | `DMRZones.CSV`, 12 |
-| Talkgroup file | `talkgroups.csv`, 5 columns | `talkgroups.csv`, 7 | `talkgroups.csv`, 5 | `DMRTalkGroups.CSV`, 5 |
-| Scanlist file | `scanlists.csv`, 12 columns | `scanlists.csv`, 18 | `scanlists.csv`, 18 | `ScanList.CSV`, 18 |
-| Frequencies | five decimals | as written in the input | five decimals | five decimals |
-| Airband | not read | not read | not read | `AMAir.CSV`, `AMZone.CSV` |
+| | `0` | `1` | `2` | `3` | `4` |
+| --- | --- | --- | --- | --- | --- |
+| Verified against | AT-D868UV CPS | the Perl original | AT-D878UVII, and AT-D878UV on later firmware | AT-D890UV CPS 1.05 | AT-D878UVII CPS v4 |
+| Channel file | `channels.csv`, 38 columns | `channels.csv`, 51 | `channels.csv`, 55 | `Channel.CSV`, 77 | `channels.csv`, 56 |
+| Zone file | `zones.csv`, 5 columns | `zones.csv`, 11 | `zones.csv`, 12 | `DMRZones.CSV`, 12 | `zones.csv`, 12 |
+| Talkgroup file | `talkgroups.csv`, 5 columns | `talkgroups.csv`, 7 | `talkgroups.csv`, 5 | `DMRTalkGroups.CSV`, 5 | `talkgroups.csv`, 5 |
+| Scanlist file | `scanlists.csv`, 12 columns | `scanlists.csv`, 18 | `scanlists.csv`, 18 | `ScanList.CSV`, 18 | `scanlists.csv`, 18 |
+| Frequencies | five decimals | as written in the input | five decimals | five decimals | five decimals |
+| Airband | not read | not read | not read | `AMAir.CSV`, `AMZone.CSV` | not read |
 
 The numbers run oldest CPS to newest, and each is a fixed identifier — a format
 discovered later is appended rather than slotted in. **Format `1` is the default
@@ -148,6 +148,12 @@ color code into its own `txcc` column (always the same value as the RX one).
 Both add a trailing `Zone Hide` to zones and drop `Country` and `Remarks` from
 talkgroups.
 
+Format `4` is format `2` with the channel row one column wider: column 20 is
+renamed `RX Color Code` and a trailing `TxCC` repeats its value, the same split
+format `3` makes at column 76. Its zone, scanlist and talkgroup files are
+byte-identical to format `2`'s, so the only thing that picks between them is
+whether your CPS wants 55 channel columns or 56.
+
 Format `3` is also the only one whose file names differ, because CPS 1.05 handles
 the AM airband alongside DMR and keeps the two apart by name: the DMR zones and
 talkgroups take the prefix, leaving `AMZone.CSV` and `AMAir.CSV` for the airband.
@@ -156,8 +162,8 @@ without it neither file appears and the CPS keeps whatever airband channels the
 radio already has.
 
 Any format will write the airband pair if asked, since the pair has only one
-shape; passing `--am-air-csv` to formats `0` to `2` warns that the CPS those
-target will not read them, but still builds everything.
+shape; passing `--am-air-csv` to any format but `3` warns that the CPS that
+format targets will not read them, but still builds everything.
 
 One AT-D878UV shows why this is a CPS property and not a radio one: exported
 from two CPS versions, its channel file came out 52 columns wide from the older
@@ -262,7 +268,7 @@ both.
 ## Output
 
 Four files, ready to import — plus two more when `--am-air-csv` is given. The
-names below are what formats `0` to `2` write; format `3` writes the same four as
+names below are what formats `0` to `2` and `4` write; format `3` writes the same four as
 `Channel.CSV`, `DMRZones.CSV`, `ScanList.CSV` and `DMRTalkGroups.CSV`.
 
 - `channels.csv` — one channel per row in the analog and digital-others files,
@@ -488,9 +494,9 @@ python3 tests/test_args_regression.py
 python3 tests/test_web_equivalence.py
 ```
 
-Golden-file regression tests covering the generated files for all four CPS
+Golden-file regression tests covering the generated files for all five CPS
 formats across all 30 combinations of `--sorting`, `--nicknames` and
-`--hotspot-tx-permit`, 55 malformed-input cases, and 24 command-line cases. They need nothing installed
+`--hotspot-tx-permit`, 55 malformed-input cases, and 25 command-line cases. They need nothing installed
 and run from any directory. See [tests/README.md](tests/README.md) for how to
 re-record them after an intentional change.
 

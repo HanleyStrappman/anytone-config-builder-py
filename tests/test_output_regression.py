@@ -41,7 +41,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _golden import (CONFIG, FIXTURES, GOLDEN, REAL_INPUTS, REPO, compare, digests,
                      load, outputs, report, run, save, updating)
 
-FORMATS = ("0", "1", "2", "3")
+FORMATS = ("0", "1", "2", "3", "4")
 DEFAULT_COMBO = "alpha.prefix.same-color-code"
 FULL_COPIES = os.path.join(GOLDEN, "default")
 

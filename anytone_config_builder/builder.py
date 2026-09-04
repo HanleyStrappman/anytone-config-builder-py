@@ -1,4 +1,4 @@
-#co!/usr/bin/env python3
+#!/usr/bin/env python3
 #
 # Anytone config builder -- helps create codeplugs for Anytone (and similar)
 # DMR radios.
@@ -114,6 +114,7 @@ MAX_CSV_FIELD_BYTES = 4096
 #   1  the original layout, as the Perl wrote it (AT-D878UV CPS)
 #   2  the 55-column channel layout (AT-D878UVII CPS)
 #   3  the 77-column channel layout (AT-D890UV CPS 1.05)
+#   4  the 56-column channel layout (AT-D878UVII CPS v4)
 #
 # They run oldest CPS to newest, and each number is a fixed identifier: a format
 # discovered later is appended rather than slotted in.  Format 1 is the default,
@@ -227,6 +228,12 @@ FORMAT_3_COLUMNS = {
 FORMAT_2_COLUMNS = {column: field for column, field in FORMAT_3_COLUMNS.items()
                     if column < 55}
 
+# Format 4 is format 2 with the channel row one column wider: the same split of
+# the color code into RX and TX halves that format 3 makes at column 76, here at
+# column 55.  Both halves always carry the same value.  Its other three files are
+# format 2's, unchanged.
+FORMAT_4_COLUMNS = {**FORMAT_2_COLUMNS, 55: CHAN_COLOR_CODE}
+
 # Format 0's channel row is format 1's first 38 columns, so it needs no map of its
 # own -- only a defaults file that stops there.  Its other three files are the
 # narrow ones: no frequency columns beside the channels named in zones and
@@ -260,6 +267,14 @@ CPS_FORMATS = {
         talkgroup_notes=False,
         files=FORMAT_3_FILES,
         airband=True,
+    ),
+    "4": CpsFormat(
+        name="4",
+        defaults="channel-defaults-4.csv",
+        columns=FORMAT_4_COLUMNS,
+        freq_decimals=5,
+        zone_hide=True,
+        talkgroup_notes=False,
     ),
 }
 
@@ -1280,14 +1295,14 @@ def usage():
     print("  [--sorting=(alpha|repeaters-first|analog-first)]")
     print("  [--hotspot-tx-permit=(always|same-color-code)]")
     print("  [--nicknames=(off|prefix|suffix)]")
-    print("  [--cps-format=(0|1|2|3)]")
+    print("  [--cps-format=(0|1|2|3|4)]")
     sys.exit(255)
 
 
 def default_config_directory():
     """The channel-defaults directory used when --config is not given.
 
-    The four files ship with the package, so this resolves beside this module
+    The five files ship with the package, so this resolves beside this module
     rather than beside the caller: an installed copy run from anywhere finds
     them, and a checkout finds the same ones it always did.
     """

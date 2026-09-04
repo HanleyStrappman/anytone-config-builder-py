@@ -261,6 +261,7 @@ CASES = [
     ("format-1", lambda: matches_command_line({"cps_format": "1"})),
     ("format-2", lambda: matches_command_line({"cps_format": "2"})),
     ("format-3", lambda: matches_command_line({"cps_format": "3"})),
+    ("format-4", lambda: matches_command_line({"cps_format": "4"})),
     # Airband is the optional fifth input, and only format 3 reads the result --
     # the others still write the pair, with a warning that has to carry across.
     ("no-airband", lambda: matches_command_line(

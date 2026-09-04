@@ -66,6 +66,7 @@ def cases(indir):
         "cps-format-0":       (v + ["--cps-format=0"], True),
         "cps-format-2":       (v + ["--cps-format=2"], True),
         "cps-format-3":       (v + ["--cps-format=3"], True),
+        "cps-format-4":       (v + ["--cps-format=4"], True),
         "cps-format-unknown": (v + ["--cps-format=9"], True),
         "abbrev-cps-format":  (v + ["--cps=3"], True),
         # Airband is optional everywhere.  Format 3 reads it; the others still

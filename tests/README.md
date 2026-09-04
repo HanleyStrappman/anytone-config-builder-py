@@ -17,7 +17,7 @@ python3 tests/test_web_equivalence.py
 
 | Script | What it covers |
 | --- | --- |
-| `test_output_regression.py` | The four generated CSVs on the real PNW inputs, for all four CPS formats across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
+| `test_output_regression.py` | The four generated CSVs on the real PNW inputs, for all five CPS formats across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
 | `test_error_regression.py` | 55 malformed-input cases — bad headers, out-of-range and non-member field values, over-long names, unknown talkgroups, missing files, short rows, oversized fields and files, and each radio table limit both over and exactly at the line. |
 | `test_args_regression.py` | Command-line handling: unknown options, stray positionals, `--`, option abbreviation, `--cps-format`, missing required arguments. |
 | `test_web_equivalence.py` | That `site/acb_web.py` builds exactly what the command line builds, across the formats and flags, plus the things only the web path can get wrong: CRLF survival, a stripped BOM, a deterministic zip, no stale files between builds, and a fatal error reaching the page intact. |
@@ -56,7 +56,7 @@ with the `Text::CSV_XS` shim that let it run here.
 - `fixtures/` — the smallest input set that still exercises every reader, used as
   the starting point the error cases mutate. `airband.csv` is deliberately not
   wired into the 30-combination cross product: airband is an optional fifth input
-  with its own per-format cases, so those 120 goldens keep meaning exactly what
+  with its own per-format cases, so those 150 goldens keep meaning exactly what
   they meant before it existed.
 - `_golden.py` — shared plumbing: running the builder, scrubbing machine-specific
   paths out of its output, loading and saving goldens, reporting differences.
@@ -90,18 +90,22 @@ that is removed afterwards.
 - **Errors go to stderr**, warnings to stdout. The Perl printed both to stdout.
 
 - **`--cps-format` selects the CPS layout**, under the same four file names in
-  every case. Format `1` is what the Perl wrote and is the default; `2` (55
-  channel columns) and `3` (77) add a trailing `Zone Hide`, drop `Country` and
-  `Remarks` from talkgroups, and pad frequencies to five decimals. Format `0` is
-  narrower than all of them: 38 channel columns, and no RX/TX frequency columns
-  beside the channels named in zones and scanlists. Every non-default format's
-  goldens were checked against a real CPS export: all four headers match, and
-  every mapped column carries the same value as the verified format `1` build.
-  Format `3` has since been imported successfully by the AT-D890UV CPS 1.05.
+  every case but format `3`, which renames them. Format `1` is what the Perl
+  wrote and is the default; `2` (55 channel columns), `3` (77) and `4` (56) add a
+  trailing `Zone Hide`, drop `Country` and `Remarks` from talkgroups, and pad
+  frequencies to five decimals. Format `0` is narrower than all of them: 38
+  channel columns, and no RX/TX frequency columns beside the channels named in
+  zones and scanlists. Every non-default format's goldens were checked against a
+  real CPS export: all four headers match, and every mapped column carries the
+  same value as the verified format `1` build. Format `3` has since been imported
+  successfully by the AT-D890UV CPS 1.05. Format `4` is format `2` plus a
+  trailing `TxCC` that repeats the RX color code: dropping that column and
+  renaming `RX Color Code` back reproduces the format `2` channel file byte for
+  byte, and its other three files are already identical to format `2`'s.
 
 - **Scanlist rows fill the whole header.** The Perl emitted 12 values under an
   18-column header, misaligning everything from `Priority Channel 1` and dropping
-  `Dwell Time[s]`. Formats `1`–`3` get the missing six. Their values are
+  `Dwell Time[s]`. Formats `1`–`4` get the missing six. Their values are
   confirmed, not inferred: every one of the 53 scanlists in a real AT-D878UV
   export carries `Off,Off,Off,"","",Off,"","",Selected,0.5,0.1,0.1,0.0`, which is
   `SCANLIST_DETAILS` byte for byte, blank priority-channel frequency fields

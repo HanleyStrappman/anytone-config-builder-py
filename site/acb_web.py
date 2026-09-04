@@ -112,7 +112,7 @@ def _zip_outputs():
     """Zip everything the builder wrote, and say what went in.
 
     Listing the directory rather than naming the files keeps this correct for
-    all four CPS formats -- format 3 calls them Channel.CSV and friends -- and
+    all five CPS formats -- format 3 calls them Channel.CSV and friends -- and
     for the airband pair, which appears only when --am-air-csv was given.
     """
     names = sorted(os.listdir(OUT_DIRECTORY))
