@@ -7,7 +7,7 @@ name = "anytone-config-builder"
 dynamic = ["version"]
 description = "Builds Anytone CPS import files from readable CSV inputs"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE.md"]
 authors = [{ name = "Scott Robinson (AG7T)", email = "sgr@nwlink.com" }]
