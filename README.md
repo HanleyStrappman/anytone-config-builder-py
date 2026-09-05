@@ -3,6 +3,11 @@
 Builds the four channel, zone, scanlist and talkgroup files that the Anytone CPS
 imports, from four readable CSV inputs you can keep under version control.
 
+**Run it in your browser:
+<https://hanleystrappman.github.io/anytone-config-builder-py/>** — nothing to
+install, no account, no upload. Your CSVs stay on your machine; there is no
+server to send them to. See [Website](#website) for how that works.
+
 The DMR and analog files are available on the
 [PNWDigital.net](https://pnwdigital.net/files/) site.
 You will need to generate the airband files yourself.
@@ -31,7 +36,9 @@ original needed `Text::CSV_XS`.)
 
 ## Install
 
-Optional: a checkout runs without installing anything.
+Most people do not need to — the [website](#website) runs the same builder with
+nothing to install, and a checkout runs without installing anything either.
+Install to put the command on your PATH.
 
 ```sh
 pip install .                    # from a checkout
@@ -40,9 +47,7 @@ pip install dist/anytone_config_builder-*.whl
 
 Either puts `anytone-config-builder` (and the shorter alias `acb`) on your PATH,
 and carries the channel-defaults files along with it, so an installed copy needs
-no `--config` and works from any directory. There is also a
-[website](#website) that runs the builder in the browser and needs no install
-at all.
+no `--config` and works from any directory.
 
 To build the distribution yourself:
 
@@ -423,6 +428,34 @@ Every path in the page is relative, so the site works at a domain root, in a
 subdirectory, or under the `/<repo>/` path GitHub Pages serves a project from —
 without rebuilding.
 
+#### GitHub Pages
+
+This is where the published site lives, and pushing a tag is the whole release:
+
+```sh
+uvx bump-my-version bump patch    # commits and tags v<version>
+git push --follow-tags
+```
+
+`.github/workflows/publish-site.yml` then runs the four regression suites,
+refuses to continue if the tag and `__version__` disagree, runs `build_site.py`,
+and deploys `site-build/` to Pages. Pushing to `master` publishes nothing, so
+work in progress on the default branch cannot reach visitors. The Actions tab's
+*Run workflow* button redeploys the current tag without cutting a version.
+
+It needs Pages set to build from Actions, once, per repository:
+
+```sh
+gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow
+```
+
+Two things that usually break WebAssembly on a static host are not problems
+here: Pages serves `.wasm` as `application/wasm`, and an artifact deployed by
+`actions/deploy-pages` is served as-is with no Jekyll pass, so no `.nojekyll` is
+needed. What Pages *cannot* do is set response headers — see below.
+
+#### Your own server
+
 ```sh
 rsync -a --delete site-build/ user@host:/var/www/acb/
 ```
@@ -480,6 +513,18 @@ header: it applies to the document alone, and a dedicated worker takes its
 policy from the headers its *own script* is served with. Since the worker is
 where Pyodide is loaded and compiled, the header is what actually constrains
 the part that matters.
+
+Which GitHub Pages cannot do: it serves no configurable headers, so on
+`github.io` the worker runs under no policy at all and only the `<meta>` tag's
+cover of the document survives. Self-hosting behind the block above is the
+stricter deployment, and remains the one to choose if that matters to you.
+
+What is actually lost is defence in depth, not the privacy claim: the page has
+no upload path to begin with, which is what keeps your files local, and the
+worker fetches nothing that is not its own. But it does mean the vendored
+Pyodide matters more on Pages, not less. `importScripts()` takes no `integrity`
+attribute and there is now no CSP behind it either, so a `--pyodide-cdn` build
+published here would have nothing whatsoever constraining what it ran.
 
 No `Cross-Origin-Opener-Policy` or `Cross-Origin-Embedder-Policy`: nothing here
 uses `SharedArrayBuffer`, so cross-origin isolation would cost compatibility

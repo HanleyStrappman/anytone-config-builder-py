@@ -1,0 +1,107 @@
+#
+# Anytone config builder -- builds the web front end and publishes it to GitHub
+# Pages.
+#
+# Copyright (C) 2026 Scott Robinson (AG7T)
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.  See <https://www.gnu.org/licenses/>.
+#
+# Releasing is one command:
+#
+#     uvx bump-my-version bump patch    # or minor, or major -- commits and tags
+#     git push --follow-tags
+#
+# The tag is what publishes.  Pushing to master does not, so work in progress
+# on the default branch cannot reach the site.
+#
+name: Publish site
+
+on:
+  push:
+    tags: ["v*"]
+  # Redeploy the current tag's site without cutting a version -- for when the
+  # site needs rebuilding but the builder has not changed.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time.  Not cancel-in-progress: two tags pushed in quick
+# succession should publish in order, and cancelling the newer run to let an
+# older one finish would leave the site behind the tag it claims to be.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The package is stdlib-only, so this is the Python the site is built
+      # with, not a version the builder is constrained to.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # bump-my-version moves the tag and __version__ together, so this only
+      # catches a hand-made tag.  Worth catching: build_site.py reads
+      # __version__ into manifest.json, and the page shows it, so a mismatch
+      # publishes a site that misreports which builder it is running.
+      - name: Check the tag matches __version__
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version=$(python3 - <<'PY'
+          import pathlib
+          for line in pathlib.Path("anytone_config_builder/__init__.py").read_text().splitlines():
+              if line.startswith("__version__"):
+                  print(line.split('"')[1])
+                  break
+          PY
+          )
+          if [ "$version" != "${GITHUB_REF_NAME#v}" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match __version__ $version"
+            exit 1
+          fi
+          echo "tag $GITHUB_REF_NAME matches __version__ $version"
+
+      - name: Install the build backend
+        run: python3 -m pip install --upgrade build
+
+      # Plain scripts, not pytest: each exits non-zero on failure, so the step
+      # fails on the first suite that does.  test_web_equivalence is the one
+      # that matters most here -- it asserts the page builds byte-for-byte what
+      # the command line builds, which is the promise the site makes to someone
+      # who cannot check it themselves.
+      - name: Run the regression tests
+        run: |
+          python3 tests/test_output_regression.py
+          python3 tests/test_error_regression.py
+          python3 tests/test_args_regression.py
+          python3 tests/test_web_equivalence.py
+
+      # No --pyodide-cdn.  Pages cannot set response headers, so the worker runs
+      # with no CSP at all; importScripts() takes no integrity attribute either.
+      # A CDN build here would have nothing constraining what ran.
+      - name: Assemble the site
+        run: python3 build_site.py
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site-build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
