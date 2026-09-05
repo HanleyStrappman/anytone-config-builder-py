@@ -16,4 +16,4 @@
 # this program.  If not, see <https://www.gnu.org/licenses/>.
 """Anytone config builder."""
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
