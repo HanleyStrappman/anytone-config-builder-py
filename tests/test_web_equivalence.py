@@ -46,6 +46,13 @@ import zipfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _golden import BUILDER, CONFIG, REPO
 
+# The checkout itself, so acb_web's "from anytone_config_builder import ..."
+# resolves without the package being installed -- the other three suites run the
+# builder as a subprocess and never import it, so this is the only one that
+# would otherwise need a pip install to pass.  acb_web cannot paper over this
+# itself: under Pyodide the wheel is unpacked straight onto sys.path, and a
+# module that reached for a checkout layout would be wrong there.
+sys.path.insert(0, REPO)
 sys.path.insert(0, os.path.join(REPO, "site"))
 import acb_web
 
