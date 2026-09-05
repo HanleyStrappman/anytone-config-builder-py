@@ -10,6 +10,10 @@ imports, from four readable CSV inputs you can keep under version control.
 install, no account, no upload. Your CSVs stay on your machine; there is no
 server to send them to. See [Website](#website) for how that works.
 
+![The builder having run the PNW example set, listing the six generated files
+with their sizes and a button to download them as a
+zip](docs/screenshot.png)
+
 The DMR and analog files are available on the
 [PNWDigital.net](https://pnwdigital.net/files/) site.
 You will need to generate the airband files yourself.
