@@ -1,10 +1,12 @@
 # Anytone Config Builder
 
+[![Run it in your browser](https://img.shields.io/badge/run%20it-in%20your%20browser-2ea44f?style=flat-square)](https://hanleystrappman.github.io/anytone-config-builder-py/)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue?style=flat-square)](LICENSE.md)
+
 Builds the four channel, zone, scanlist and talkgroup files that the Anytone CPS
 imports, from four readable CSV inputs you can keep under version control.
 
-**Run it in your browser:
-<https://hanleystrappman.github.io/anytone-config-builder-py/>** — nothing to
+**<https://hanleystrappman.github.io/anytone-config-builder-py/>** — nothing to
 install, no account, no upload. Your CSVs stay on your machine; there is no
 server to send them to. See [Website](#website) for how that works.
 
