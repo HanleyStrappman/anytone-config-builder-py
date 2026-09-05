@@ -443,10 +443,22 @@ and deploys `site-build/` to Pages. Pushing to `master` publishes nothing, so
 work in progress on the default branch cannot reach visitors. The Actions tab's
 *Run workflow* button redeploys the current tag without cutting a version.
 
-It needs Pages set to build from Actions, once, per repository:
+Two things need setting once, per repository. Pages has to build from
+Actions rather than from a branch:
 
 ```sh
 gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow
+```
+
+And the `github-pages` environment has to let tags deploy. GitHub creates that
+environment with a branch policy allowing the default branch and nothing else,
+so the build succeeds and the deploy is rejected with "not allowed to deploy to
+github-pages due to environment protection rules" — which only shows up on a
+real tag, never on a `workflow_dispatch` run from `master`:
+
+```sh
+gh api -X POST repos/<owner>/<repo>/environments/github-pages/deployment-branch-policies \
+    -f name='v*' -f type=tag
 ```
 
 Two things that usually break WebAssembly on a static host are not problems
