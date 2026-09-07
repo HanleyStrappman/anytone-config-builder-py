@@ -304,14 +304,14 @@ the import anyway, and quietly dropping the four-thousand-and-first channel is
 a worse answer than saying so. The numbers are the AT-D890UV's, applied
 whichever `--cps-format` you build for:
 
-| | limit |
-|---|---|
-| channels | 4000 |
-| zones | 250 |
-| scanlists | 250 |
-| talkgroups | 10000 |
-| airband channels | 256 |
-| airband zones | 16 |
+|                  | limit |
+|------------------|-------|
+| channels         | 4000  |
+| zones            | 250   |
+| scanlists        | 250   |
+| talkgroups       | 10000 |
+| airband channels | 256   |
+| airband zones    | 16    |
 
 Each is checked as the input is read, so the message names the file and line
 that went over. Talkgroups are counted as *defined* in the talkgroups file,
