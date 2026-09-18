@@ -18,7 +18,7 @@ python3 tests/test_web_equivalence.py
 
 | Script | What it covers |
 | --- | --- |
-| `test_output_regression.py` | The four generated CSVs on the real PNW inputs, for all five CPS formats across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
+| `test_output_regression.py` | The four generated CSVs on the real PNW inputs, for all five packaged CPS formats across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
 | `test_error_regression.py` | 55 malformed-input cases — bad headers, out-of-range and non-member field values, over-long names, unknown talkgroups, missing files, short rows, oversized fields and files, and each radio table limit both over and exactly at the line. |
 | `test_args_regression.py` | Command-line handling: unknown options, stray positionals, `--`, option abbreviation, `--cps-format`, missing required arguments. |
 | `test_format_regression.py` | Discovering CPS formats from a `--config` directory: a format that is nothing but a channel layout, the packaged formats still reachable underneath one, overriding a packaged format, every format-file key, and the ways a format file or a channel layout can fail to make sense. |
