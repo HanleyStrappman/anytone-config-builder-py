@@ -53,8 +53,7 @@ CHAN_BANDWIDTH = 6
 CHAN_CTCSS_DEC = 7
 CHAN_CTCSS_ENC = 8
 CHAN_CONTACT = 9
-CHAN_CALL_TYPE_OLD = 10
-CHAN_CALL_TYPE_NEW = 44
+CHAN_CALL_TYPE = 10
 CHAN_TG_ID = 45
 CHAN_TX_PERMIT = 12
 CHAN_SQUELCH_MODE = 13
@@ -63,7 +62,6 @@ CHAN_TIME_SLOT = 20
 CHAN_SCANLIST_NAME = 21
 CHAN_TX_PROHIBIT = 23
 CHAN_DMR_MODE = 47
-CHAN_PTT_PROHIBIT = 48
 ACB_ZONE_NICKNAME = 1000
 
 VAL_DIGITAL = "D-Digital"
@@ -116,14 +114,25 @@ MAX_CSV_FIELD_BYTES = 4096
 #   3  the 77-column channel layout (AT-D890UV CPS 1.05)
 #   4  the 56-column channel layout (AT-D878UVII CPS v4)
 #
-# They run oldest CPS to newest, and each number is a fixed identifier: a format
+# That list is not written down anywhere in this file, though -- it is what the
+# config directory happens to hold.  A format is one channel-defaults-<name>.csv,
+# discovered by load_formats(), and adding a format is adding that one file: the
+# name comes from the file name, the column count and the header row come from
+# its contents, and which of our internal fields lands in each column is worked
+# out from the CPS header names it already carries (see ALIASES).
+#
+# Numbers rather than names because the numbers are fixed identifiers: a format
 # discovered later is appended rather than slotted in.  Format 1 is the default,
 # because it is the layout the Perl original wrote.
 #
 # Channels are assembled internally in the format 1 column layout -- the CHAN_*
-# constants above are indices into that layout.  A format describes how to turn
-# that into one CPS's import files: what to call them, which column each internal
-# field lands in, and the handful of places the other three files differ.
+# constants above are indices into that layout.  A format turns that into one
+# CPS's import files.
+#
+# The handful of things a channel layout cannot say -- what the other three files
+# are called, and the few places their shape differs -- default to what formats
+# 2, 3 and 4 all do, and are overridden by an optional format-<name>.csv beside
+# the defaults file.  See read_format_config().
 
 
 # The fixed tail of a scanlist row, from Scan Mode onwards.  Taken from AT-D878UV
@@ -139,16 +148,12 @@ SCANLIST_DETAILS = ("Off", "Off", "Off", "", "", "Off", "", "", "Selected",
 SCANLIST_DETAILS_NO_FREQS = ("Off", "Off", "Off", "Off", "Selected",
                              "0.5", "0.1", "0.1", "0.0")
 
-# The four file names formats 0 through 2 share.  Each is what its own CPS writes
-# when it exports, which is also what it expects back on import.
+# The four file names most CPSes use.  Each is what its own CPS writes when it
+# exports, which is also what it expects back on import.  A CPS that disagrees
+# says so in its format file, under the file.* keys -- AT-D890UV CPS 1.05 is the
+# only one that does.
 OUTPUT_FILES = {"channels": "channels.csv", "zones": "zones.csv",
                 "scanlists": "scanlists.csv", "talkgroups": "talkgroups.csv"}
-
-# AT-D890UV CPS 1.05 handles the AM airband as well as DMR, and keeps the two
-# apart by name: its DMR zones and talkgroups take the prefix, leaving AMZone.CSV
-# and AMAir.CSV for the airband -- see AM_FILES.
-FORMAT_3_FILES = {"channels": "Channel.CSV", "zones": "DMRZones.CSV",
-                  "scanlists": "ScanList.CSV", "talkgroups": "DMRTalkGroups.CSV"}
 
 # The airband pair, written only when --am-air-csv supplies something to put in
 # them.  Unlike the four above these have no per-format variants, because only
@@ -160,16 +165,156 @@ AM_FILES = {"am_air": "AMAir.CSV", "am_zones": "AMZone.CSV"}
 AM_FREQ_DECIMALS = 4
 LENGTH_AM_NAME = 16
 
+# A format is named after the part of channel-defaults-<name>.csv that this
+# matches.  Constrained because the name is then used to build file names, and
+# turns up in output the user reads.
+FORMAT_NAME_RE = re.compile(r"[A-Za-z0-9_-]+\Z")
+
+# Format 1 is the default because it is the layout the Perl original wrote.
+DEFAULT_CPS_FORMAT = "1"
+
+DEFAULTS_PREFIX = "channel-defaults-"
+DEFAULTS_SUFFIX = ".csv"
+FORMAT_PREFIX = "format-"
+FORMAT_SUFFIX = ".csv"
+
+
+################################################################################
+##########   WORKING OUT A FORMAT'S COLUMNS FROM ITS HEADER NAMES
+################################################################################
+
+# What each CPS calls the columns we have something to put in.  A channel-defaults
+# file carries its CPS's own header names in column 1 -- that is what the header
+# row of the generated file is built from -- so the layout of a format we have
+# never seen can be read straight out of it, rather than transcribed by hand into
+# a table here.  Every column whose name is not in this table is left alone and
+# takes its default.
+#
+# Several names map onto one field on purpose:
+#
+#   - A CPS renames a column between versions without changing what goes in it:
+#     "Color Code" became "RX Color Code", "Scan List" became "CH Scan List".
+#   - A row is written into two columns that always agree.  The newer layouts
+#     split the color code into an RX and a TX half ("txcc", "TxCC"), and every
+#     layout carries the call type and the transmit prohibit twice.  The builder
+#     produces one value for each pair; both columns get it.
+ALIASES = {
+    "No.": CHAN_NUM,
+    "Channel Name": CHAN_NAME,
+    "Receive Frequency": CHAN_RX_FREQ,
+    "Transmit Frequency": CHAN_TX_FREQ,
+    "Channel Type": CHAN_MODE,
+    "Transmit Power": CHAN_POWER,
+    "Band Width": CHAN_BANDWIDTH,
+    "CTCSS/DCS Decode": CHAN_CTCSS_DEC,
+    "CTCSS/DCS Encode": CHAN_CTCSS_ENC,
+    "Contact": CHAN_CONTACT,
+    "Contact/Talk Group": CHAN_CONTACT,
+    "Contact Call Type": CHAN_CALL_TYPE,
+    "Contact/Talk Group Call Type": CHAN_CALL_TYPE,
+    "Contact TG/DMR ID": CHAN_TG_ID,
+    "Contact/Talk Group TG/DMR ID": CHAN_TG_ID,
+    "Busy Lock/TX Permit": CHAN_TX_PERMIT,
+    "Squelch Mode": CHAN_SQUELCH_MODE,
+    "Color Code": CHAN_COLOR_CODE,
+    "RX Color Code": CHAN_COLOR_CODE,
+    "txcc": CHAN_COLOR_CODE,
+    "TxCC": CHAN_COLOR_CODE,
+    "Slot": CHAN_TIME_SLOT,
+    "Scan List": CHAN_SCANLIST_NAME,
+    "CH Scan List": CHAN_SCANLIST_NAME,
+    "TX Prohibit": CHAN_TX_PROHIBIT,
+    "PTT Prohibit": CHAN_TX_PROHIBIT,
+    "DMR MODE": CHAN_DMR_MODE,
+}
+
+# What a format file's column.<n> rows may name, for the CPS whose header this
+# table has never seen.  The same fields as ALIASES, under names short enough to
+# type into a spreadsheet.
+FIELD_NAMES = {
+    "num": CHAN_NUM,
+    "name": CHAN_NAME,
+    "rx_freq": CHAN_RX_FREQ,
+    "tx_freq": CHAN_TX_FREQ,
+    "mode": CHAN_MODE,
+    "power": CHAN_POWER,
+    "bandwidth": CHAN_BANDWIDTH,
+    "ctcss_dec": CHAN_CTCSS_DEC,
+    "ctcss_enc": CHAN_CTCSS_ENC,
+    "contact": CHAN_CONTACT,
+    "call_type": CHAN_CALL_TYPE,
+    "tg_id": CHAN_TG_ID,
+    "tx_permit": CHAN_TX_PERMIT,
+    "squelch_mode": CHAN_SQUELCH_MODE,
+    "color_code": CHAN_COLOR_CODE,
+    "time_slot": CHAN_TIME_SLOT,
+    "scanlist_name": CHAN_SCANLIST_NAME,
+    "tx_prohibit": CHAN_TX_PROHIBIT,
+    "dmr_mode": CHAN_DMR_MODE,
+}
+
+# A channel layout that cannot carry one of these is not one we can fill in, so
+# deriving it is an error rather than something to warn about and press on with:
+# every generated channel would silently take the default in its place.  Named by
+# the header the CPS is expected to use, because that is what the user is looking
+# at when they read the message.
+#
+# Two fields are deliberately absent.  CHAN_TG_ID and CHAN_DMR_MODE have no
+# column at all in the 38-column layout, which predates both.
+REQUIRED_FIELDS = (
+    (CHAN_NUM, "No."),
+    (CHAN_NAME, "Channel Name"),
+    (CHAN_RX_FREQ, "Receive Frequency"),
+    (CHAN_TX_FREQ, "Transmit Frequency"),
+    (CHAN_MODE, "Channel Type"),
+    (CHAN_POWER, "Transmit Power"),
+    (CHAN_BANDWIDTH, "Band Width"),
+    (CHAN_CTCSS_DEC, "CTCSS/DCS Decode"),
+    (CHAN_CTCSS_ENC, "CTCSS/DCS Encode"),
+    (CHAN_CONTACT, "Contact"),
+    (CHAN_CALL_TYPE, "Contact Call Type"),
+    (CHAN_TX_PERMIT, "Busy Lock/TX Permit"),
+    (CHAN_SQUELCH_MODE, "Squelch Mode"),
+    (CHAN_COLOR_CODE, "Color Code"),
+    (CHAN_TIME_SLOT, "Slot"),
+    (CHAN_SCANLIST_NAME, "Scan List"),
+    (CHAN_TX_PROHIBIT, "TX Prohibit"),
+)
+
+
+def derive_columns(field_names):
+    """Which internal field feeds each output column, read off the header names.
+
+    `field_names` is the column -> CPS header name map out of a channel-defaults
+    file.  Columns whose header this build has never heard of are simply absent
+    from the result, which leaves them taking their default.
+    """
+    return {column: ALIASES[name.strip()]
+            for column, name in field_names.items()
+            if name.strip() in ALIASES}
+
+
+def missing_required_fields(columns):
+    """The headers a derived column map has no column for, in table order."""
+    present = set(columns.values())
+    return [header for field, header in REQUIRED_FIELDS if field not in present]
+
 
 class CpsFormat:
-    """How one CPS wants its four import files shaped."""
+    """How one CPS wants its four import files shaped.
 
-    def __init__(self, name, defaults, columns=None, freq_decimals=None,
-                 zone_hide=False, talkgroup_notes=True, member_freqs=True,
-                 files=None, airband=False):
+    The defaults are what formats 2, 3 and 4 all do, so a format file has to say
+    nothing at all unless its CPS is one of the odd ones.
+    """
+
+    def __init__(self, name, columns, defaults_path, label=None, tested=False,
+                 freq_decimals=5, zone_hide=True, talkgroup_notes=False,
+                 member_freqs=True, files=None, airband=False):
         self.name = name
-        self.defaults = defaults            # channel defaults file, inside --config
         self.columns = columns              # output column -> internal CHAN_* field
+        self.defaults_path = defaults_path  # the channel-defaults file it came from
+        self.label = label or name          # what the web front end calls it
+        self.tested = tested                # checked against a real CPS export?
         self.freq_decimals = freq_decimals  # None to pass frequencies through as-is
         self.zone_hide = zone_hide          # trailing "Zone Hide " column
         self.talkgroup_notes = talkgroup_notes  # Country and Remarks columns
@@ -180,13 +325,7 @@ class CpsFormat:
                                             # gates the warning, not the writing
 
     def field_for_column(self, column):
-        """Which internal field feeds this output column, or None for a default.
-
-        A format with no explicit map works in the layout the builder already
-        uses, so each column is fed by the identically numbered field.
-        """
-        if self.columns is None:
-            return column
+        """Which internal field feeds this output column, or None for a default."""
         return self.columns.get(column)
 
     def freq(self, value):
@@ -196,87 +335,217 @@ class CpsFormat:
         return f"{float(value):.{self.freq_decimals}f}"
 
 
-# Format 3 keeps format 1's first nine columns, then inserts a talkgroup ID column
-# which shifts the rest along by one, and carries the DMR mode and PTT prohibit
-# fields inline rather than appended at the end.  It also writes the TX color code
-# ("txcc") as a separate column from the RX one, always with the same value.
-FORMAT_3_COLUMNS = {
-    0: CHAN_NUM,
-    1: CHAN_NAME,
-    2: CHAN_RX_FREQ,
-    3: CHAN_TX_FREQ,
-    4: CHAN_MODE,
-    5: CHAN_POWER,
-    6: CHAN_BANDWIDTH,
-    7: CHAN_CTCSS_DEC,
-    8: CHAN_CTCSS_ENC,
-    9: CHAN_CONTACT,
-    10: CHAN_CALL_TYPE_OLD,
-    11: CHAN_TG_ID,
-    13: CHAN_TX_PERMIT,
-    14: CHAN_SQUELCH_MODE,
-    20: CHAN_COLOR_CODE,
-    21: CHAN_TIME_SLOT,
-    22: CHAN_SCANLIST_NAME,
-    24: CHAN_TX_PROHIBIT,
-    45: CHAN_DMR_MODE,
-    76: CHAN_COLOR_CODE,
-}
+################################################################################
+##########   READING A FORMAT OFF THE DISK
+################################################################################
 
-# Format 2 stops at 55 columns -- format 3 without its NXDN tail, and without the
-# separate TX color code that lives beyond it.
-FORMAT_2_COLUMNS = {column: field for column, field in FORMAT_3_COLUMNS.items()
-                    if column < 55}
+# What a format file may say yes or no with.  Generous on the way in because the
+# file is edited in a spreadsheet, which is happy to turn any of them into any
+# other.
+BOOLEAN_WORDS = {"yes": True, "no": False, "true": True, "false": False,
+                 "on": True, "off": False, "1": True, "0": False}
 
-# Format 4 is format 2 with the channel row one column wider: the same split of
-# the color code into RX and TX halves that format 3 makes at column 76, here at
-# column 55.  Both halves always carry the same value.  Its other three files are
-# format 2's, unchanged.
-FORMAT_4_COLUMNS = {**FORMAT_2_COLUMNS, 55: CHAN_COLOR_CODE}
+# The format file keys that are a plain yes or no.  Each is a CpsFormat keyword.
+FORMAT_FLAGS = ("tested", "airband", "zone_hide", "talkgroup_notes",
+                "member_freqs")
 
-# Format 0's channel row is format 1's first 38 columns, so it needs no map of its
-# own -- only a defaults file that stops there.  Its other three files are the
-# narrow ones: no frequency columns beside the channels named in zones and
-# scanlists, and no Country or Remarks on talkgroups.
-CPS_FORMATS = {
-    "0": CpsFormat(
-        name="0",
-        defaults="channel-defaults-0.csv",
-        freq_decimals=5,
-        talkgroup_notes=False,
-        member_freqs=False,
-    ),
-    "1": CpsFormat(
-        name="1",
-        defaults="channel-defaults-1.csv",
-    ),
-    "2": CpsFormat(
-        name="2",
-        defaults="channel-defaults-2.csv",
-        columns=FORMAT_2_COLUMNS,
-        freq_decimals=5,
-        zone_hide=True,
-        talkgroup_notes=False,
-    ),
-    "3": CpsFormat(
-        name="3",
-        defaults="channel-defaults-3.csv",
-        columns=FORMAT_3_COLUMNS,
-        freq_decimals=5,
-        zone_hide=True,
-        talkgroup_notes=False,
-        files=FORMAT_3_FILES,
-        airband=True,
-    ),
-    "4": CpsFormat(
-        name="4",
-        defaults="channel-defaults-4.csv",
-        columns=FORMAT_4_COLUMNS,
-        freq_decimals=5,
-        zone_hide=True,
-        talkgroup_notes=False,
-    ),
-}
+
+def _format_error(filename, key, value, expected):
+    return ConfigError(f"'{key}' in the format file '{filename}' is '{value}', "
+                       f"which is not {expected}.\n")
+
+
+def read_format_config(filename):
+    """Read a format-<name>.csv into CpsFormat keyword arguments.
+
+    Two columns, key then value, and every key optional -- what it leaves out is
+    whatever CpsFormat defaults to.  An unrecognised key is an error rather than
+    something to skip: a misspelled zone_hide that quietly did nothing would
+    produce a codeplug the CPS imports without complaint and fills in wrong.
+    """
+    config = {}
+    files = {}
+    columns = {}
+
+    with open_csv_read(filename) as fh:
+        for row in csv_records(fh, "format"):
+            if not row or not row[0].strip() or row[0].lstrip().startswith("#"):
+                continue
+            if len(row) < 2:
+                raise ConfigError(f"A row of the format file '{filename}' has only "
+                                  f"one column, where a key and a value were "
+                                  f"expected.\n")
+
+            key = row[0].strip()
+            value = row[1]
+
+            if key in FORMAT_FLAGS:
+                word = value.strip().lower()
+                if word not in BOOLEAN_WORDS:
+                    raise _format_error(filename, key, value, "a yes or a no")
+                config[key] = BOOLEAN_WORDS[word]
+
+            elif key == "label":
+                config["label"] = value.strip()
+
+            elif key == "freq_decimals":
+                word = value.strip().lower()
+                if word == "as-is":
+                    config["freq_decimals"] = None
+                elif word.isdigit():
+                    config["freq_decimals"] = int(word)
+                else:
+                    raise _format_error(filename, key, value,
+                                        "a number of decimal places, or 'as-is'")
+
+            elif key.startswith("file."):
+                which = key[len("file."):]
+                if which not in OUTPUT_FILES:
+                    raise _format_error(
+                        filename, key, value,
+                        "one of " + ", ".join(f"file.{n}" for n in sorted(OUTPUT_FILES)))
+                # Joined with --output-directory to decide where to write, so a
+                # name that can climb out of it is refused here rather than
+                # trusted.
+                name = value.strip()
+                if not name or name in (".", "..") or "/" in name or "\\" in name:
+                    raise _format_error(filename, key, value, "a plain file name")
+                files[which] = name
+
+            elif key.startswith("column."):
+                number = key[len("column."):].strip()
+                if not number.isdigit():
+                    raise ConfigError(f"'{key}' in the format file '{filename}' does "
+                                      f"not name a column number.\n")
+                word = value.strip().lower()
+                if word == "":
+                    # An explicit nothing: the header matched ALIASES, but this
+                    # CPS means something else by it.
+                    columns[int(number)] = None
+                elif word in FIELD_NAMES:
+                    columns[int(number)] = FIELD_NAMES[word]
+                else:
+                    raise _format_error(filename, key, value,
+                                        "one of " + ", ".join(sorted(FIELD_NAMES)))
+
+            else:
+                raise ConfigError(f"'{key}' in the format file '{filename}' is not "
+                                  f"something this builder knows about.\n")
+
+    if files:
+        config["files"] = {**OUTPUT_FILES, **files}
+    if columns:
+        config["columns"] = columns
+
+    return config
+
+
+def format_names_in(directory):
+    """The format names `directory` holds a channel-defaults file for.
+
+    A file whose name would not make a usable format name is passed over rather
+    than complained about -- this is a directory listing, and what else the user
+    keeps beside their config is their business.
+    """
+    try:
+        filenames = os.listdir(directory)
+    except OSError:
+        return []
+
+    names = []
+    for filename in filenames:
+        if not (filename.startswith(DEFAULTS_PREFIX)
+                and filename.endswith(DEFAULTS_SUFFIX)):
+            continue
+        name = filename[len(DEFAULTS_PREFIX):-len(DEFAULTS_SUFFIX)]
+        if FORMAT_NAME_RE.match(name):
+            names.append(name)
+
+    return sorted(names)
+
+
+def read_channel_defaults(filename):
+    """Parse a channel-defaults file into its two column-keyed maps.
+
+    Returns (field name, default value), both keyed by output column index.  The
+    field names are the CPS's own column headers: they become the header row of
+    the generated channel file, and deriving the format's column map reads them
+    back (see derive_columns()).
+    """
+    field_names = {}
+    default_values = {}
+
+    with open_csv_read(filename) as fh:
+        for row in csv_records(fh, "channel-defaults"):
+            if not row:
+                continue
+            if len(row) < 3:
+                raise ConfigError(f"A row of the channel-defaults file "
+                                  f"'{filename}' has fewer than the 3 columns "
+                                  f"expected.\n")
+            index = int(perl_num(row[0]))
+            field_names[index] = row[1]
+            default_values[index] = row[2]
+
+    return field_names, default_values
+
+
+def load_format(name, directory):
+    """Build one CpsFormat from the files `directory` holds for it."""
+    defaults_path = os.path.join(directory, f"{DEFAULTS_PREFIX}{name}{DEFAULTS_SUFFIX}")
+    field_names, _defaults = read_channel_defaults(defaults_path)
+
+    columns = derive_columns(field_names)
+
+    format_path = os.path.join(directory, f"{FORMAT_PREFIX}{name}{FORMAT_SUFFIX}")
+    config = read_format_config(format_path) if os.path.exists(format_path) else {}
+
+    for column, field in config.pop("columns", {}).items():
+        if field is None:
+            columns.pop(column, None)
+        else:
+            columns[column] = field
+
+    missing = missing_required_fields(columns)
+    if missing:
+        raise ConfigError(
+            f"The channel layout in '{defaults_path}' has no column this builder "
+            f"recognises for: {', '.join(missing)}.  Either the file is not a "
+            f"channel layout, or its CPS calls those columns something new -- in "
+            f"which case name them in '{FORMAT_PREFIX}{name}{FORMAT_SUFFIX}', one "
+            f"'column.<number>' row each.\n")
+
+    return CpsFormat(name=name, columns=columns, defaults_path=defaults_path, **config)
+
+
+def load_formats(config_directory=None):
+    """Every CPS format available to this run, by name.
+
+    The formats that ship with the package are always found.  A --config
+    directory is read on top of them, so it adds formats and replaces ones of the
+    same name, rather than -- as it once did -- standing in for the packaged
+    directory entirely and having to carry a copy of every format to be usable at
+    all.
+    """
+    packaged = default_config_directory()
+    directories = [packaged]
+
+    if config_directory is not None:
+        if not config_directory.strip():
+            raise ConfigError("--config needs the name of a directory.\n")
+        if not os.path.isdir(config_directory):
+            raise ConfigError(f"The config directory '{config_directory}' is not a "
+                              f"directory I can read.\n")
+        if os.path.abspath(config_directory) != os.path.abspath(packaged):
+            directories.append(config_directory)
+
+    # Later directories win, so the one the user named is read last.
+    where = {}
+    for directory in directories:
+        for name in format_names_in(directory):
+            where[name] = directory
+
+    return {name: load_format(name, where[name]) for name in sorted(where)}
 
 
 class ConfigError(Exception):
@@ -438,8 +707,8 @@ def validate_hotspot_mode(hotspot_mode):
     return _validate_membership(hotspot_mode, ("always", "same-color-code"), "Hotspot TX Permit")
 
 
-def validate_cps_format(cps_format):
-    return _validate_membership(cps_format, tuple(CPS_FORMATS), "CPS Format")
+def validate_cps_format(cps_format, formats):
+    return _validate_membership(cps_format, tuple(formats), "CPS Format")
 
 
 def validate_nickname_mode(nickname_mode):
@@ -492,8 +761,13 @@ def _validate_string_length(type_name, string, length, ctx=NO_FILE_CONTEXT):
 
 class ConfigBuilder:
     def __init__(self, sort_mode="alpha", hotspot_tx_permit="same-color-code",
-                 nickname_mode="prefix", cps_format="1"):
-        self.cps_format = CPS_FORMATS[cps_format]
+                 nickname_mode="prefix", cps_format=None, formats=None):
+        # cps_format is a CpsFormat and formats the registry it came from, both
+        # from load_formats().  Read off the disk here only if neither was given,
+        # so that importing this module, or building with a format in hand, does
+        # not go looking for a config directory.
+        self._formats = formats
+        self.cps_format = cps_format or self.formats[DEFAULT_CPS_FORMAT]
         self.sort_mode = sort_mode
         self.hotspot_tx_permit = hotspot_tx_permit
         self.nickname_mode = nickname_mode
@@ -515,13 +789,19 @@ class ConfigBuilder:
         self.am_air = {}          # airband channel name -> frequency, first seen first
         self.am_zone_config = {}  # airband zone name -> its channel names, in order
 
+    @property
+    def formats(self):
+        if self._formats is None:
+            self._formats = load_formats()
+        return self._formats
+
     def run(self, analog_filename, digital_others_filename, digital_repeaters_filename,
-            talkgroups_filename, config_directory, output_directory,
+            talkgroups_filename, output_directory,
             airband_filename=None):
         files = self.cps_format.files
 
         self.read_talkgroups(talkgroups_filename)
-        self.read_channel_csv_default(f"{config_directory}/{self.cps_format.defaults}")
+        self.read_channel_csv_default(self.cps_format.defaults_path)
 
         try:
             fh = open(f"{output_directory}/{files['channels']}", "w",
@@ -548,9 +828,13 @@ class ConfigBuilder:
             self.write_am_zone_file(f"{output_directory}/{AM_FILES['am_zones']}")
 
             if not self.cps_format.airband:
-                warning(f"The airband files are only read by AT-D890UV CPS 1.05, which "
-                        f"is --cps-format=3. {AM_FILES['am_air']} and "
-                        f"{AM_FILES['am_zones']} have been written, but the CPS that "
+                readers = ", ".join(f"{fmt.label}, which is --cps-format={name}"
+                                    for name, fmt in sorted(self.formats.items())
+                                    if fmt.airband)
+                warning(f"The airband files are only read by "
+                        f"{readers or 'no CPS format this builder knows about'}. "
+                        f"{AM_FILES['am_air']} and {AM_FILES['am_zones']} have been "
+                        f"written, but the CPS that "
                         f"--cps-format={self.cps_format.name} targets will not import "
                         f"them.")
 
@@ -765,7 +1049,6 @@ class ConfigBuilder:
             CHAN_CTCSS_DEC: validate_ctcss(row[6], ctx),
             CHAN_CTCSS_ENC: validate_ctcss(row[7], ctx),
             CHAN_TX_PROHIBIT: validate_tx_prohibit(row[8], ctx),
-            CHAN_PTT_PROHIBIT: validate_tx_prohibit(row[8], ctx),
             CHAN_MODE: VAL_ANALOG,
         }
 
@@ -797,8 +1080,7 @@ class ConfigBuilder:
             CHAN_CONTACT: validate_contact(row[6], ctx),
             CHAN_TG_ID: self.talkgroup_mapping.get(row[6]),
             CHAN_TIME_SLOT: validate_timeslot(row[7], ctx),
-            CHAN_CALL_TYPE_OLD: validate_call_type(row[8], ctx),
-            CHAN_CALL_TYPE_NEW: validate_call_type(row[8], ctx),
+            CHAN_CALL_TYPE: validate_call_type(row[8], ctx),
             CHAN_TX_PERMIT: validate_tx_permit(row[9], ctx),
             CHAN_MODE: VAL_DIGITAL,
         }
@@ -851,8 +1133,7 @@ class ConfigBuilder:
             chan_config[CHAN_TG_ID] = self.talkgroup_mapping.get(contact)
             chan_config[CHAN_TIME_SLOT] = validate_timeslot(timeslot, ctx)
             chan_config[CHAN_NAME] = validate_channel_name(chan_name, ctx)
-            chan_config[CHAN_CALL_TYPE_OLD] = validate_call_type(call_type, ctx)
-            chan_config[CHAN_CALL_TYPE_NEW] = validate_call_type(call_type, ctx)
+            chan_config[CHAN_CALL_TYPE] = validate_call_type(call_type, ctx)
             do_multiply = True
 
         return do_multiply, chan_config
@@ -864,17 +1145,8 @@ class ConfigBuilder:
     #####
     #####
     def read_channel_csv_default(self, filename):
-        with open_csv_read(filename) as fh:
-            for row in csv_records(fh, "channel-defaults"):
-                if not row:
-                    continue
-                if len(row) < 3:
-                    raise ConfigError(f"A row of the channel-defaults file "
-                                      f"'{filename}' has fewer than the 3 columns "
-                                      f"expected.\n")
-                index = int(perl_num(row[0]))
-                self.channel_csv_field_name[index] = row[1]
-                self.channel_csv_default_value[index] = row[2]
+        self.channel_csv_field_name, self.channel_csv_default_value = \
+            read_channel_defaults(filename)
 
     def read_airband_file(self, filename):
         """Read the airband input into the flat channel table and its zones.
@@ -1157,7 +1429,7 @@ class ConfigBuilder:
 
     def build_talkgroup_config(self, chan_config, zone_name):
         talkgroup = chan_config[CHAN_CONTACT]
-        call_type = chan_config[CHAN_CALL_TYPE_OLD]
+        call_type = chan_config[CHAN_CALL_TYPE]
 
         if talkgroup not in self.talkgroup_mapping:
             raise ConfigError(f"Talkgroup '{talkgroup}' is referenced but not defined in the "
@@ -1295,16 +1567,17 @@ def usage():
     print("  [--sorting=(alpha|repeaters-first|analog-first)]")
     print("  [--hotspot-tx-permit=(always|same-color-code)]")
     print("  [--nicknames=(off|prefix|suffix)]")
-    print("  [--cps-format=(0|1|2|3|4)]")
+    print(f"  [--cps-format=({'|'.join(format_names_in(default_config_directory()))})]")
     sys.exit(255)
 
 
 def default_config_directory():
-    """The channel-defaults directory used when --config is not given.
+    """The config directory that ships with the package.
 
-    The five files ship with the package, so this resolves beside this module
-    rather than beside the caller: an installed copy run from anywhere finds
-    them, and a checkout finds the same ones it always did.
+    Always read, whether or not --config is given, so this resolves beside this
+    module rather than beside the caller: an installed copy run from anywhere
+    finds the formats it shipped with, and a checkout finds the same ones it
+    always did.
     """
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 
@@ -1321,7 +1594,7 @@ def handle_command_line_args(argv):
     parser.add_argument("--sorting", default="alpha")
     parser.add_argument("--nicknames", default="prefix")
     parser.add_argument("--hotspot-tx-permit", default="same-color-code")
-    parser.add_argument("--cps-format", default="1")
+    parser.add_argument("--cps-format", default=DEFAULT_CPS_FORMAT)
 
     if "--" in argv:
         argv = argv[:argv.index("--")]
@@ -1343,17 +1616,19 @@ def handle_command_line_args(argv):
     validate_sort_mode(args.sorting)
     validate_hotspot_mode(args.hotspot_tx_permit)
     validate_nickname_mode(args.nicknames)
-    validate_cps_format(args.cps_format)
 
     if (args.analog_csv is None or args.digital_others_csv is None
             or args.digital_repeaters_csv is None or args.talkgroups_csv is None
             or args.output_directory is None):
         usage()
 
-    if args.config is None:
-        args.config = default_config_directory()
+    # After --config, which is part of deciding what the valid formats are.  It
+    # is left as None when not given: load_formats() always reads the packaged
+    # directory, and needs to know whether the user named one of their own.
+    formats = load_formats(args.config)
+    validate_cps_format(args.cps_format, formats)
 
-    return args
+    return args, formats
 
 
 def main(argv=None):
@@ -1361,18 +1636,26 @@ def main(argv=None):
     # imports the builder as a library keeps csv's own default.
     csv.field_size_limit(MAX_CSV_FIELD_BYTES)
 
-    args = handle_command_line_args(sys.argv[1:] if argv is None else argv)
+    args, formats = handle_command_line_args(sys.argv[1:] if argv is None else argv)
+
+    cps_format = formats[args.cps_format]
+    if not cps_format.tested:
+        warning(f"CPS format '{cps_format.name}' has not been checked against a "
+                f"real CPS export. The files it writes may not import, or may "
+                f"import into the wrong fields. Compare them against a codeplug "
+                f"exported from your own CPS before trusting them.")
 
     builder = ConfigBuilder(sort_mode=args.sorting,
                             hotspot_tx_permit=args.hotspot_tx_permit,
                             nickname_mode=args.nicknames,
-                            cps_format=args.cps_format)
+                            cps_format=cps_format,
+                            formats=formats)
 
     if args.sorting == "analog-first":
         builder.zone_order_default = 0
 
     builder.run(args.analog_csv, args.digital_others_csv, args.digital_repeaters_csv,
-                args.talkgroups_csv, args.config, args.output_directory,
+                args.talkgroups_csv, args.output_directory,
                 airband_filename=args.am_air_csv)
 
     return 0

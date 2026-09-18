@@ -1,0 +1,5 @@
+# AT-D878UVII CPS v4 -- format 2 with the channel row one column wider, splitting
+# the color code into an RX and a TX half.  Both halves always carry the same
+# value, which the TxCC header takes care of on its own.
+label,AT-D878UVII CPS v4
+tested,yes
