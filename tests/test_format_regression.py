@@ -70,6 +70,15 @@ def raw(filename, content):
     return lambda d: open(os.path.join(d, filename), "w").write(content)
 
 
+def copied_with_bytes(source, name, old, new):
+    """copied_with_edit() on the bytes, for a file that is not valid text."""
+    def setup(d):
+        data = open(os.path.join(CONFIG, DEFAULTS.format(source)), "rb").read()
+        assert old in data, f"pattern not found in format {source}: {old!r}"
+        open(os.path.join(d, DEFAULTS.format(name)), "wb").write(data.replace(old, new))
+    return setup
+
+
 def steps(*setups):
     return lambda d: [s(d) for s in setups]
 
@@ -134,6 +143,13 @@ CASES = [
     # ---- the channel layout itself ----
     ("empty-layout",        raw(DEFAULTS.format("9"), ""), "9"),
     ("layout-short-row",    copied_with_edit("4", "9", "5,Transmit Power,High", "5,Transmit Power"), "9"),
+    # The Perl original's numeric coercion read either of these as a column
+    # number -- "abc" as 0, "1e400" as infinity -- and neither is one.
+    ("layout-bad-index",    copied_with_edit("4", "9", "5,Transmit Power,High", "abc,Transmit Power,High"), "9"),
+    ("layout-huge-index",   copied_with_edit("4", "9", "5,Transmit Power,High", "1e400,Transmit Power,High"), "9"),
+    # What a spreadsheet saving in Windows-1252 makes of a degree sign.  A fault
+    # in the file, reported as one rather than as a traceback.
+    ("layout-not-utf8",     copied_with_bytes("4", "9", b"Custom CTCSS", b"Custom CTCSS \xb0"), "9"),
 
     # ---- naming ----
     # Not a usable format name, so it is passed over rather than complained

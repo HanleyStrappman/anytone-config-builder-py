@@ -27,7 +27,8 @@
 #     JS  calls  build(<options as JSON>)  ->  <result as JSON>
 #     JS  reads the zip back from the "zip_path" the result names
 #
-#     JS  writes a CPS format's files to config_path(<file name>)
+#     JS  writes a CPS format's files to staging_path(<file name>)
+#     JS  calls  add_format(<those file names as JSON>)  ->  <formats, as JSON>
 #     JS  calls  formats()  ->  <the CPS formats available, as JSON>
 #
 import contextlib
@@ -56,6 +57,12 @@ OUT_DIRECTORY = "/work/out"
 # format CSV is the visitor's file, kept wherever they keep their other codeplug
 # CSVs, and this page holds no copy of it.
 CONFIG_DIRECTORY = "/work/config"
+
+# Where the page writes a picked format file before add_format() looks at it.
+# Nothing lands in CONFIG_DIRECTORY until it has been read and found good, so an
+# upload that fails leaves the tab exactly as it was -- a bad file left in the
+# config directory would fail every later build, on every format, until reload.
+STAGING_DIRECTORY = "/work/staging"
 
 ZIP_PATH = "/work/codeplug.zip"
 
@@ -98,34 +105,108 @@ def input_path(role):
     return f"{IN_DIRECTORY}/{role}.csv"
 
 
-def config_path(name):
-    """Where the page should write `name`, one of a CPS format's two files.
+def _format_file_name(name):
+    """`name` if it is one of a CPS format's two files, else ValueError.
 
     Rejects anything that is not a channel layout or a format file, which also
-    rejects every name that could put the file somewhere other than here: the
-    pattern allows no dot, no slash and no separator of any other kind.
+    rejects every name that could put the file somewhere other than where it is
+    joined to: the pattern allows no dot, no slash and no separator of any other
+    kind.
     """
     if not CONFIG_FILE_RE.match(name):
         raise ValueError(f"not a CPS format file name: {name}")
-    return f"{CONFIG_DIRECTORY}/{name}"
+    return name
+
+
+def config_path(name):
+    """Where a CPS format file lives once add_format() has accepted it."""
+    return f"{CONFIG_DIRECTORY}/{_format_file_name(name)}"
+
+
+def staging_path(name):
+    """Where the page writes a picked format file for add_format() to look at.
+
+    Makes sure the directory is there to write into: the page can add a format
+    before it has ever built, and reset() -- which also creates it -- runs only
+    ahead of a build.
+    """
+    os.makedirs(STAGING_DIRECTORY, exist_ok=True)
+    return f"{STAGING_DIRECTORY}/{_format_file_name(name)}"
 
 
 def formats():
     """The CPS formats this build can write, for the page's format menu.
 
     Whatever ships with the builder, plus whatever the visitor has added to
-    CONFIG_DIRECTORY.  Called again after each upload, so the menu says what is
-    actually available rather than what was available when the page loaded.
+    CONFIG_DIRECTORY.  Everything in that directory has been through
+    add_format(), so this is not expected to fail; if it somehow does, the menu
+    still has to say what went wrong and offer the formats that shipped.
     """
     os.makedirs(CONFIG_DIRECTORY, exist_ok=True)
     try:
         found = load_formats(CONFIG_DIRECTORY)
     except ConfigError as exc:
-        # A format file that will not parse must not take the menu down with it:
-        # the page still has to be able to say what went wrong, and to offer the
-        # formats that shipped.
         return json.dumps({"ok": False, "error": str(exc).strip(),
                            "formats": _format_list(load_formats())})
+
+    return json.dumps({"ok": True, "formats": _format_list(found)})
+
+
+def add_format(names_json):
+    """Take the format files the page staged into the config directory.
+
+    `names_json` is a JSON list of the file names written to STAGING_DIRECTORY.
+    Each is normalised the way an input file is -- BOM stripped, Latin-1 read as
+    such -- moved into CONFIG_DIRECTORY, and the whole directory read back.  If
+    the builder cannot make sense of the result, the move is undone: what was
+    added is removed, and what it replaced is put back.  The visitor is told what
+    was wrong, and the menu goes on offering everything that loaded before.
+
+    Returns the same JSON as formats().
+    """
+    names = [_format_file_name(name) for name in json.loads(names_json)]
+    os.makedirs(CONFIG_DIRECTORY, exist_ok=True)
+
+    # What each name held before, so a failed upload can put it back.  A bad
+    # channel-defaults-9.csv must not cost the visitor the good one it replaced.
+    previous = {}
+    for name in names:
+        path = config_path(name)
+        if os.path.exists(path):
+            with open(path, "rb") as handle:
+                previous[name] = handle.read()
+        else:
+            previous[name] = None
+
+    def restore():
+        for name, content in previous.items():
+            path = config_path(name)
+            if content is None:
+                if os.path.exists(path):
+                    os.remove(path)
+            else:
+                with open(path, "wb") as handle:
+                    handle.write(content)
+
+    try:
+        for name in names:
+            _normalise(staging_path(name))
+            shutil.move(staging_path(name), config_path(name))
+        found = load_formats(CONFIG_DIRECTORY)
+    except ConfigError as exc:
+        restore()
+        return json.dumps({"ok": False, "error": str(exc).strip(),
+                           "formats": _format_list(load_formats(CONFIG_DIRECTORY))})
+    except BaseException:
+        # Not one of the builder's own complaints, so something is wrong here
+        # rather than in the file.  Let it reach the page as the fault it is --
+        # but not with the file still in place to fail every later build.
+        restore()
+        raise
+    finally:
+        for name in names:
+            if os.path.exists(staging_path(name)):
+                os.remove(staging_path(name))
 
     return json.dumps({"ok": True, "formats": _format_list(found)})
 
@@ -143,7 +224,7 @@ def reset():
     the same tab cannot pick up a file -- input or output -- left by the first.
     CONFIG_DIRECTORY is deliberately not among them; see where it is defined.
     """
-    for directory in (IN_DIRECTORY, OUT_DIRECTORY):
+    for directory in (IN_DIRECTORY, OUT_DIRECTORY, STAGING_DIRECTORY):
         shutil.rmtree(directory, ignore_errors=True)
         os.makedirs(directory)
 

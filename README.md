@@ -638,7 +638,7 @@ python3 tests/test_web_equivalence.py
 
 Golden-file regression tests covering the generated files for all five packaged
 CPS formats across all 30 combinations of `--sorting`, `--nicknames` and
-`--hotspot-tx-permit`, 55 malformed-input cases, 25 command-line cases, and 27
+`--hotspot-tx-permit`, 55 malformed-input cases, 25 command-line cases, and 30
 format-discovery cases. They need nothing installed and run from any directory.
 See [tests/README.md](tests/README.md) for how to re-record them after an
 intentional change.

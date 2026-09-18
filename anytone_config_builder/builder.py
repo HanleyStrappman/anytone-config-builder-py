@@ -483,7 +483,15 @@ def read_channel_defaults(filename):
                 raise ConfigError(f"A row of the channel-defaults file "
                                   f"'{filename}' has fewer than the 3 columns "
                                   f"expected.\n")
-            index = int(perl_num(row[0]))
+            # A plain integer, checked rather than coerced: the Perl original's
+            # numeric coercion would read "abc" as 0 and quietly overwrite the
+            # first column, and "1e400" as infinity.  Neither is a column.
+            number = row[0].strip()
+            if not (number.isascii() and number.isdigit()):
+                raise ConfigError(f"A row of the channel-defaults file "
+                                  f"'{filename}' starts with '{row[0]}', where a "
+                                  f"column number was expected.\n")
+            index = int(number)
             field_names[index] = row[1]
             default_values[index] = row[2]
 
@@ -565,7 +573,6 @@ def report_error(message):
 ################################################################################
 
 _NUMBER_RE = re.compile(r"\s*[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?\s*\Z")
-_LEADING_NUMBER_RE = re.compile(r"\s*[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
 
 
 def looks_like_number(value):
@@ -574,14 +581,6 @@ def looks_like_number(value):
     if value is None:
         return False
     return bool(_NUMBER_RE.match(value))
-
-
-def perl_num(value):
-    """Perl's numeric coercion of a scalar: the leading number, or 0."""
-    if isinstance(value, (int, float)):
-        return value
-    match = _LEADING_NUMBER_RE.match(value or "")
-    return float(match.group()) if match and match.group().strip() else 0.0
 
 
 def perl_split(sep, value):
@@ -613,7 +612,10 @@ def csv_records(fh, file_nickname):
     """csv.reader that reports a parse failure as a ConfigError, not a traceback.
 
     csv raises on an over-long field, which is the one malformed-input case it
-    treats as fatal rather than something to muddle through.
+    treats as fatal rather than something to muddle through.  The file object
+    raises on a byte that is not UTF-8, which a spreadsheet saving in Windows-1252
+    produces the moment a heading holds a degree sign; that is a fault in the
+    file too, not in the program.
     """
     reader = csv.reader(fh)
     while True:
@@ -624,6 +626,12 @@ def csv_records(fh, file_nickname):
         except csv.Error as exc:
             raise ConfigError(f"Couldn't parse the {file_nickname} file near line "
                               f"{reader.line_num}: {exc}\n")
+        except UnicodeDecodeError as exc:
+            # No line number: the file object decodes ahead of the reader in
+            # chunks, so neither reader.line_num nor exc.start says where in the
+            # file the byte is.  Which byte it is says which character it was.
+            raise ConfigError(f"The {file_nickname} file is not UTF-8 (byte "
+                              f"0x{exc.object[exc.start]:02X}: {exc.reason}).\n")
         yield row
 
 

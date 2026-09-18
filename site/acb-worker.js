@@ -27,7 +27,8 @@ let manifest = null;
 let pyBuild = null;
 let pyReset = null;
 let pyInputPath = null;
-let pyConfigPath = null;
+let pyStagingPath = null;
+let pyAddFormat = null;
 let pyFormats = null;
 
 // Resolved against this worker's own URL rather than the server root, so the
@@ -43,6 +44,19 @@ function post(type, payload, transfer) {
 
 function status(text) {
     post("status", { text: text });
+}
+
+// What to tell the page about something thrown.  An Emscripten filesystem
+// error is not an Error and has no message, only an errno; String() of it is
+// "[object Object]", which says nothing.
+function describe(error) {
+    if (error && error.message) {
+        return error.message;
+    }
+    if (error && typeof error.errno === "number") {
+        return "Filesystem error " + error.errno;
+    }
+    return String(error);
 }
 
 async function fetchSite(path) {
@@ -80,7 +94,8 @@ async function boot() {
     pyBuild = pyodide.globals.get("build");
     pyReset = pyodide.globals.get("reset");
     pyInputPath = pyodide.globals.get("input_path");
-    pyConfigPath = pyodide.globals.get("config_path");
+    pyStagingPath = pyodide.globals.get("staging_path");
+    pyAddFormat = pyodide.globals.get("add_format");
     pyFormats = pyodide.globals.get("formats");
 
     // The page's format menu is whatever the builder found, rather than a list
@@ -90,19 +105,23 @@ async function boot() {
 }
 
 // A CPS format the visitor supplied: a channel layout, and optionally the format
-// file beside it.  Written into the config directory rather than the input one,
-// which pyReset() does not empty, so a format added once survives every build in
-// this tab -- and nothing beyond it, since the filesystem goes when the tab does.
+// file beside it.  Staged, then handed to add_format(), which moves it into the
+// config directory only once the builder has read it and found it good -- and
+// puts back whatever was there if not, so a bad upload changes nothing.  The
+// config directory is the one pyReset() does not empty, so a format added once
+// survives every build in this tab -- and nothing beyond it, since the
+// filesystem goes when the tab does.
 function addFormat(message) {
     status("Reading the format\u2026");
 
-    for (const name of Object.keys(message.files)) {
-        // config_path() refuses a name that is not one of a format's two files,
-        // which is also what stops it landing anywhere but the config directory.
-        pyodide.FS.writeFile(pyConfigPath(name), new Uint8Array(message.files[name]));
+    const names = Object.keys(message.files);
+    for (const name of names) {
+        // staging_path() refuses a name that is not one of a format's two files,
+        // which is also what stops it landing anywhere but the staging directory.
+        pyodide.FS.writeFile(pyStagingPath(name), new Uint8Array(message.files[name]));
     }
 
-    post("formats", { formats: JSON.parse(pyFormats()) });
+    post("formats", { formats: JSON.parse(pyAddFormat(JSON.stringify(names))) });
 }
 
 function runBuild(message) {
@@ -139,6 +158,6 @@ self.onmessage = async (event) => {
             addFormat(event.data);
         }
     } catch (error) {
-        post("failed", { message: error && error.message ? error.message : String(error) });
+        post("failed", { message: describe(error) });
     }
 };

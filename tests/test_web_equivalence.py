@@ -78,6 +78,7 @@ work = tempfile.mkdtemp(prefix="acb-webeq-")
 acb_web.IN_DIRECTORY = os.path.join(work, "in")
 acb_web.OUT_DIRECTORY = os.path.join(work, "out")
 acb_web.CONFIG_DIRECTORY = os.path.join(work, "config")
+acb_web.STAGING_DIRECTORY = os.path.join(work, "staging")
 acb_web.ZIP_PATH = os.path.join(work, "codeplug.zip")
 
 
@@ -269,22 +270,34 @@ def reports_failure_like_the_command_line():
 # CPS formats the visitor supplied
 ####
 
-def added_format(name, source="4", format_file=None):
-    """Put a CPS format into the page's config directory, as an upload would.
+def added_format(name, source="4", format_file=None, layout=None):
+    """Add a CPS format the way an upload does, and return what the page hears.
 
-    Goes through config_path() rather than around it, so the name is checked by
-    the same thing that checks it in the browser.
+    The files are staged and handed to add_format(), which is the path the
+    worker takes: staging_path() checks the names the way the browser has them
+    checked, and add_format() decides whether they reach the config directory.
+    `layout` is the channel-defaults bytes to use instead of a packaged copy.
     """
-    os.makedirs(acb_web.CONFIG_DIRECTORY, exist_ok=True)
-    shutil.copy(os.path.join(CONFIG, f"channel-defaults-{source}.csv"),
-                acb_web.config_path(f"channel-defaults-{name}.csv"))
+    # No makedirs here: the worker writes to staging_path() without one, from a
+    # tab that may never have built, so staging_path() has to provide the place.
+    names = [f"channel-defaults-{name}.csv"]
+    if layout is None:
+        shutil.copy(os.path.join(CONFIG, f"channel-defaults-{source}.csv"),
+                    acb_web.staging_path(names[0]))
+    else:
+        with open(acb_web.staging_path(names[0]), "wb") as fh:
+            fh.write(layout)
     if format_file is not None:
-        with open(acb_web.config_path(f"format-{name}.csv"), "w") as fh:
+        names.append(f"format-{name}.csv")
+        with open(acb_web.staging_path(names[1]), "w") as fh:
             fh.write(format_file)
+    return json.loads(acb_web.add_format(json.dumps(names)))
 
 
 def clear_added_formats():
-    shutil.rmtree(acb_web.CONFIG_DIRECTORY, ignore_errors=True)
+    """Back to a tab that has never added a format -- or built, so no staging."""
+    for directory in (acb_web.CONFIG_DIRECTORY, acb_web.STAGING_DIRECTORY):
+        shutil.rmtree(directory, ignore_errors=True)
     os.makedirs(acb_web.CONFIG_DIRECTORY)
 
 
@@ -368,12 +381,14 @@ def broken_format_file_leaves_the_menu_standing():
     """A format file that will not parse is reported, not fatal.
 
     The menu still has to offer what shipped, or a typo in a file the visitor
-    added would take the whole page down with it.
+    added would take the whole page down with it.  And the file must not stay
+    behind: build() passes --config whenever the directory holds anything, so a
+    bad file left there would fail every later build, on every format, until
+    the page was reloaded.
     """
     clear_added_formats()
-    added_format("9", format_file="zone_hyde,yes\n")
+    report = added_format("9", format_file="zone_hyde,yes\n")
 
-    report = format_menu()
     problems = []
     if report["ok"]:
         problems.append("a format file with an unknown key was accepted")
@@ -382,31 +397,109 @@ def broken_format_file_leaves_the_menu_standing():
     if {f["name"] for f in report["formats"]} != {"0", "1", "2", "3", "4"}:
         problems.append("the shipped formats stopped being offered")
 
+    left = sorted(os.listdir(acb_web.CONFIG_DIRECTORY))
+    if left:
+        problems.append(f"the refused files were left in the config directory: {left}")
+    if sorted(os.listdir(acb_web.STAGING_DIRECTORY)):
+        problems.append("the refused files were left in the staging directory")
+
+    result, _ = web({"cps_format": "1"})
+    if not result["ok"]:
+        problems.append("a build on a shipped format failed after the refusal: "
+                        + (result.get("stderr") or result.get("crash") or "").strip())
+
+    clear_added_formats()
+    return problems
+
+
+def broken_upload_keeps_the_good_one():
+    """Re-adding a format with a broken file must not cost the working one.
+
+    A visitor fixing their format file will upload it more than once.  The
+    upload that fails has to leave the last one that worked in place, or every
+    typo would send them back to the start.
+    """
+    clear_added_formats()
+    added_format("9")
+    before, _ = web({"cps_format": "9"})
+
+    report = added_format("9", format_file="zone_hyde,yes\n")
+    problems = []
+    if report["ok"]:
+        problems.append("a format file with an unknown key was accepted")
+    if "9" not in {f["name"] for f in report["formats"]}:
+        problems.append("the working format was dropped from the menu")
+
+    after, _ = web({"cps_format": "9"})
+    if not after["ok"]:
+        problems.append("the working format no longer builds")
+    elif after["files"] != before["files"]:
+        problems.append("the working format builds something different now")
+
+    clear_added_formats()
+    return problems
+
+
+def latin1_format_file_is_normalised():
+    """A channel layout saved in Windows-1252 is read, as an input would be.
+
+    Spreadsheets write that encoding without asking, and a degree sign in a
+    heading is enough.  Inputs are normalised to UTF-8 before the builder sees
+    them; a format file has to get the same treatment, or the one upload a
+    visitor makes from their CPS export is the one that fails.
+    """
+    clear_added_formats()
+    with open(os.path.join(CONFIG, "channel-defaults-4.csv"), "rb") as fh:
+        # A heading the builder does not map, so the only thing the byte can
+        # change is whether the file is readable at all.
+        layout = fh.read().replace(b"Custom CTCSS", b"Custom CTCSS \xb0")
+
+    report = added_format("9", layout=layout)
+    problems = []
+    if not report["ok"]:
+        problems.append("the layout was refused: " + report.get("error", ""))
+    if "9" not in {f["name"] for f in report["formats"]}:
+        problems.append("the layout never reached the menu")
+
+    result, files = web({"cps_format": "9"})
+    if not result["ok"]:
+        problems.append("a build on it failed")
+    elif "Custom CTCSS \u00b0".encode("utf-8") not in files.get("channels.csv", b""):
+        problems.append("the heading did not come through as UTF-8")
+
     clear_added_formats()
     return problems
 
 
 def config_path_refuses_anything_else():
-    """The one place a name from the page decides where a file lands."""
-    problems = []
-    for name in ("../../etc/passwd", "channel-defaults-9.csv.bak", "analog.csv",
-                 "channel-defaults-../9.csv", "format-9.csv/x",
-                 "channel-defaults-.csv", "", "format-.csv"):
-        try:
-            acb_web.config_path(name)
-            problems.append(f"accepted {name!r}")
-        except ValueError:
-            pass
+    """The one check that decides where a file named by the page lands.
 
-    for name in ("channel-defaults-9.csv", "format-9.csv",
-                 "channel-defaults-D578UV_v2.csv"):
-        try:
-            where = acb_web.config_path(name)
-        except ValueError:
-            problems.append(f"refused {name!r}, which is a format file name")
-            continue
-        if os.path.dirname(where) != acb_web.CONFIG_DIRECTORY:
-            problems.append(f"{name!r} would land in {os.path.dirname(where)}")
+    Two paths take a name from the page -- staging_path() for the worker's
+    write, config_path() for add_format()'s move -- and both have to refuse the
+    same things.
+    """
+    problems = []
+    for path_for, directory in ((acb_web.staging_path, acb_web.STAGING_DIRECTORY),
+                                (acb_web.config_path, acb_web.CONFIG_DIRECTORY)):
+        for name in ("../../etc/passwd", "channel-defaults-9.csv.bak", "analog.csv",
+                     "channel-defaults-../9.csv", "format-9.csv/x",
+                     "channel-defaults-.csv", "", "format-.csv"):
+            try:
+                path_for(name)
+                problems.append(f"{path_for.__name__} accepted {name!r}")
+            except ValueError:
+                pass
+
+        for name in ("channel-defaults-9.csv", "format-9.csv",
+                     "channel-defaults-D578UV_v2.csv"):
+            try:
+                where = path_for(name)
+            except ValueError:
+                problems.append(f"{path_for.__name__} refused {name!r}, which is a "
+                                f"format file name")
+                continue
+            if os.path.dirname(where) != directory:
+                problems.append(f"{name!r} would land in {os.path.dirname(where)}")
 
     return problems
 
@@ -471,6 +564,8 @@ CASES = [
     ("added-format-builds", added_format_builds_like_the_command_line),
     ("added-format-survives-build", added_format_survives_a_build),
     ("broken-format-file", broken_format_file_leaves_the_menu_standing),
+    ("broken-upload-keeps-good-one", broken_upload_keeps_the_good_one),
+    ("latin1-format-file", latin1_format_file_is_normalised),
     ("builds-without-config-dir", builds_without_a_config_directory),
 ]
 

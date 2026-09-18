@@ -22,7 +22,7 @@ python3 tests/test_web_equivalence.py
 | `test_error_regression.py` | 55 malformed-input cases — bad headers, out-of-range and non-member field values, over-long names, unknown talkgroups, missing files, short rows, oversized fields and files, and each radio table limit both over and exactly at the line. |
 | `test_args_regression.py` | Command-line handling: unknown options, stray positionals, `--`, option abbreviation, `--cps-format`, missing required arguments. |
 | `test_format_regression.py` | Discovering CPS formats from a `--config` directory: a format that is nothing but a channel layout, the packaged formats still reachable underneath one, overriding a packaged format, every format-file key, and the ways a format file or a channel layout can fail to make sense. |
-| `test_web_equivalence.py` | That `site/acb_web.py` builds exactly what the command line builds, across the formats and flags, plus the things only the web path can get wrong: CRLF survival, a stripped BOM, a deterministic zip, no stale files between builds, and a fatal error reaching the page intact. |
+| `test_web_equivalence.py` | That `site/acb_web.py` builds exactly what the command line builds, across the formats and flags, plus the things only the web path can get wrong: CRLF survival, a stripped BOM, a deterministic zip, no stale files between builds, a fatal error reaching the page intact, and a CPS format the visitor adds — offered, built on, surviving a build, normalised from Windows-1252, and leaving nothing behind when it is refused. |
 
 ## What the format tests are really checking
 
