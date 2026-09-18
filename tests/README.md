@@ -12,6 +12,7 @@ any working directory.
 python3 tests/test_output_regression.py
 python3 tests/test_error_regression.py
 python3 tests/test_args_regression.py
+python3 tests/test_format_regression.py
 python3 tests/test_web_equivalence.py
 ```
 
@@ -20,7 +21,38 @@ python3 tests/test_web_equivalence.py
 | `test_output_regression.py` | The four generated CSVs on the real PNW inputs, for all five CPS formats across all 30 combinations of `--sorting`, `--nicknames` and `--hotspot-tx-permit`. |
 | `test_error_regression.py` | 55 malformed-input cases — bad headers, out-of-range and non-member field values, over-long names, unknown talkgroups, missing files, short rows, oversized fields and files, and each radio table limit both over and exactly at the line. |
 | `test_args_regression.py` | Command-line handling: unknown options, stray positionals, `--`, option abbreviation, `--cps-format`, missing required arguments. |
+| `test_format_regression.py` | Discovering CPS formats from a `--config` directory: a format that is nothing but a channel layout, the packaged formats still reachable underneath one, overriding a packaged format, every format-file key, and the ways a format file or a channel layout can fail to make sense. |
 | `test_web_equivalence.py` | That `site/acb_web.py` builds exactly what the command line builds, across the formats and flags, plus the things only the web path can get wrong: CRLF survival, a stripped BOM, a deterministic zip, no stale files between builds, and a fatal error reaching the page intact. |
+
+## What the format tests are really checking
+
+A CPS format used to be a row in a table in `builder.py`; it is now a
+`channel-defaults-<name>.csv` in the config directory, and which of the builder's
+internal fields lands in which output column is worked out from the CPS header
+names that file already carries.
+
+Two different things have to hold, and they are checked in two different places.
+
+**That the derived column map is the map the builder used to carry** is held by
+`test_output_regression.py`, and only by it. Those goldens were recorded before
+the table was removed, so they are the last independent record of what it said —
+drop an entry from `ALIASES` and 32 of them fail. Nothing in
+`test_format_regression.py` can see that, because both sides of its comparison
+derive their columns from the same table.
+
+**That a format found on disk is as good as one that ships** is what
+`test_format_regression.py` holds. It drops a copy of a packaged channel layout
+in under a name nothing ships and requires that it builds, byte for byte, what
+the format it was copied from builds — so discovery, the `--config` overlay and
+the format-file defaults cannot quietly introduce a difference between the two.
+There is nothing to re-record in those three checks: the two runs simply have to
+agree.
+
+The 38-column case is scoped to `channels.csv` on purpose. A bare channel layout
+is only half of what a packaged format is; the other half is its format file, and
+without one the three files that are not the channel list take the modern shape
+rather than format 0's own. The third check carries that format file across too,
+and then all four have to match.
 
 ## Re-recording
 
@@ -52,7 +84,8 @@ with the `Text::CSV_XS` shim that let it run here.
   digest mismatch can be turned into a readable diff instead of two hex strings.
   The rest are compared by digest only; keeping them all in full would cost tens
   of MB of near-identical CSVs.
-- `golden/errors.json`, `golden/args.json` — exit status and messages per case.
+- `golden/errors.json`, `golden/args.json`, `golden/formats.json` — exit status and
+  messages per case.
 - `fixtures/` — the smallest input set that still exercises every reader, used as
   the starting point the error cases mutate. `airband.csv` is deliberately not
   wired into the 30-combination cross product: airband is an optional fifth input
