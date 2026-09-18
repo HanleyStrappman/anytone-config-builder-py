@@ -91,13 +91,10 @@
 
   <div class="field">
     <label for="cps_format">CPS format</label>
-    <select id="cps_format">
-      <option value="0">0 &mdash; AT-D868UV CPS</option>
-      <option value="1" selected>1 &mdash; the default</option>
-      <option value="2">2 &mdash; AT-D878UVII, AT-D878UV on later firmware</option>
-      <option value="3">3 &mdash; AT-D890UV CPS 1.05</option>
-      <option value="4">4 &mdash; AT-D878UVII CPS v4</option>
-    </select>
+    <!-- Filled in from the builder once the worker is up: a CPS format is a file
+         in the config directory rather than a list kept here, so the only thing
+         that knows what formats exist is the builder itself. -->
+    <select id="cps_format" disabled></select>
     <p class="note important">
       Which layout your CPS wants is a property of the <em>CPS</em>, not of the
       radio &mdash; a newer CPS for the same radio can read a different one.
@@ -107,6 +104,22 @@
       differ from column 11 onward, so the wrong choice can import without
       complaint and put every value in the wrong field.
     </p>
+
+    <details id="add-format">
+      <summary>My CPS is not in the list</summary>
+      <p class="note">A CPS format is a file, not something built into this page.
+        Export a codeplug from your CPS, and turn its channel list into a
+        <code>channel-defaults-<em>name</em>.csv</code> &mdash; one row per column,
+        holding the column number, the heading your CPS gave it, and the value to
+        use when the input CSVs do not say. Pick it here and it joins the list
+        above. If your CPS also renames the zone, scanlist and talkgroup files,
+        add a <code>format-<em>name</em>.csv</code> beside it saying so.</p>
+      <p class="note important">Nothing is kept. The file lives in this tab and
+        goes when you close it, so keep your copy wherever you keep your other
+        codeplug CSVs and pick it again next time.</p>
+      <input type="file" id="file-format" accept=".csv" multiple>
+      <p class="note" id="format-added"></p>
+    </details>
   </div>
 
   <div class="field">

@@ -19,6 +19,15 @@ const ROLES = REQUIRED.concat(OPTIONAL);
 // anyway, and saves it landing in the wasm heap on the way.
 const MAX_INPUT_BYTES = 10 * 1024 * 1024;
 
+// The format the menu starts on: the layout the original Perl tool wrote, and
+// what the builder itself defaults to.
+const DEFAULT_FORMAT = "1";
+
+// The two files a CPS format is made of, so a picked file can be checked before
+// it is sent rather than after.  Kept in step with CONFIG_FILE_RE in acb_web.py,
+// which is the check that actually applies.
+const FORMAT_FILE_RE = /^(?:channel-defaults|format)-[A-Za-z0-9_-]+\.csv$/;
+
 // role -> {name, buffer}, or null for "not supplied".
 const chosen = {};
 ROLES.forEach((role) => { chosen[role] = null; });
@@ -241,7 +250,11 @@ function onWorkerMessage(event) {
     } else if (message.type === "ready") {
         ready = true;
         manifestReady(message.version);
+        showFormats(message.formats);
         refreshAndAnnounce();
+    } else if (message.type === "formats") {
+        showFormats(message.formats);
+        announceReadiness();
     } else if (message.type === "result") {
         showResult(message.result);
         refreshBuildButton();  // deliberately not announceReadiness()
@@ -254,6 +267,73 @@ function onWorkerMessage(event) {
 function manifestReady(version) {
     el("version").textContent = "anytone-config-builder " + version;
     el("examples").disabled = false;
+}
+
+// Rebuilds the format menu from what the builder reports.  Keeps the current
+// selection if it still exists, so adding a second format does not silently move
+// the visitor off the one they just picked.
+function showFormats(report) {
+    const select = el("cps_format");
+    const keep = select.value;
+
+    select.textContent = "";
+    report.formats.forEach((format) => {
+        const option = document.createElement("option");
+        option.value = format.name;
+        option.textContent = format.name + " \u2014 " + format.label
+            + (format.tested ? "" : " (untested)");
+        select.appendChild(option);
+    });
+
+    const names = report.formats.map((format) => format.name);
+    select.value = names.includes(keep) ? keep
+        : names.includes(DEFAULT_FORMAT) ? DEFAULT_FORMAT
+        : names[0];
+    select.disabled = report.formats.length === 0;
+
+    // A format file that will not parse leaves the menu standing on whatever
+    // shipped, so the visitor can still build while they fix it.
+    const note = el("format-added");
+    if (report.ok === false) {
+        note.textContent = report.error;
+        note.className = "note important";
+    } else {
+        const added = report.formats.filter((format) => format.added);
+        note.textContent = added.length === 0 ? ""
+            : "Added: " + added.map((format) => format.name).join(", ")
+              + ". These have not been checked against a real CPS export "
+              + "\u2014 compare what you get back against a codeplug exported "
+              + "from your own CPS before trusting it.";
+        note.className = "note" + (added.length ? " important" : "");
+    }
+}
+
+// Sends a picked format file to the worker, which writes it where the builder
+// will find it and reports back what that changed.
+function addFormatFiles(picked) {
+    const files = {};
+    const transfer = [];
+    const refused = [];
+
+    picked.forEach((file) => {
+        if (!FORMAT_FILE_RE.test(file.name)) {
+            refused.push(file.name);
+            return;
+        }
+        files[file.name] = file.buffer;
+        transfer.push(file.buffer);
+    });
+
+    if (refused.length > 0) {
+        const note = el("format-added");
+        note.textContent = "Not a CPS format file: " + refused.join(", ")
+            + ". The name has to be channel-defaults-<name>.csv, or "
+            + "format-<name>.csv beside it.";
+        note.className = "note important";
+        return;
+    }
+
+    worker.postMessage({ type: "add_format", files: files }, transfer);
 }
 
 async function start() {
@@ -285,6 +365,30 @@ async function start() {
                 showChosen(role);
                 refreshAndAnnounce();
             });
+        });
+    });
+
+    el("file-format").addEventListener("change", (event) => {
+        const picked = Array.from(event.target.files);
+        if (picked.length === 0) {
+            return;
+        }
+        const oversized = picked.find((file) => file.size > MAX_INPUT_BYTES);
+        if (oversized) {
+            el("format-added").textContent = oversized.name + " is "
+                + humanSize(oversized.size) + ", over the "
+                + humanSize(MAX_INPUT_BYTES) + " limit.";
+            el("format-added").className = "note important";
+            event.target.value = "";
+            return;
+        }
+        Promise.all(picked.map((file) =>
+            file.arrayBuffer().then((buffer) => ({ name: file.name, buffer: buffer }))
+        )).then((files) => {
+            // Cleared so that re-picking the same file after editing it still
+            // fires a change event; the worker already has what was sent.
+            event.target.value = "";
+            addFormatFiles(files);
         });
     });
 

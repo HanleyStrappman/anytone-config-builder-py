@@ -27,6 +27,8 @@ let manifest = null;
 let pyBuild = null;
 let pyReset = null;
 let pyInputPath = null;
+let pyConfigPath = null;
+let pyFormats = null;
 
 // Resolved against this worker's own URL rather than the server root, so the
 // site works unchanged at a domain root, in a subdirectory, or under the
@@ -78,8 +80,29 @@ async function boot() {
     pyBuild = pyodide.globals.get("build");
     pyReset = pyodide.globals.get("reset");
     pyInputPath = pyodide.globals.get("input_path");
+    pyConfigPath = pyodide.globals.get("config_path");
+    pyFormats = pyodide.globals.get("formats");
 
-    post("ready", { version: manifest.version });
+    // The page's format menu is whatever the builder found, rather than a list
+    // kept in the HTML: a CPS format is a file in the config directory now, so
+    // the only thing that actually knows what formats exist is the builder.
+    post("ready", { version: manifest.version, formats: JSON.parse(pyFormats()) });
+}
+
+// A CPS format the visitor supplied: a channel layout, and optionally the format
+// file beside it.  Written into the config directory rather than the input one,
+// which pyReset() does not empty, so a format added once survives every build in
+// this tab -- and nothing beyond it, since the filesystem goes when the tab does.
+function addFormat(message) {
+    status("Reading the format\u2026");
+
+    for (const name of Object.keys(message.files)) {
+        // config_path() refuses a name that is not one of a format's two files,
+        // which is also what stops it landing anywhere but the config directory.
+        pyodide.FS.writeFile(pyConfigPath(name), new Uint8Array(message.files[name]));
+    }
+
+    post("formats", { formats: JSON.parse(pyFormats()) });
 }
 
 function runBuild(message) {
@@ -112,6 +135,8 @@ self.onmessage = async (event) => {
             await boot();
         } else if (event.data.type === "build") {
             runBuild(event.data);
+        } else if (event.data.type === "add_format") {
+            addFormat(event.data);
         }
     } catch (error) {
         post("failed", { message: error && error.message ? error.message : String(error) });
