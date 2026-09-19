@@ -77,6 +77,8 @@ work = tempfile.mkdtemp(prefix="acb-webeq-")
 # temporary directory is the whole of what it takes to run it here.
 acb_web.IN_DIRECTORY = os.path.join(work, "in")
 acb_web.OUT_DIRECTORY = os.path.join(work, "out")
+acb_web.CONFIG_DIRECTORY = os.path.join(work, "config")
+acb_web.STAGING_DIRECTORY = os.path.join(work, "staging")
 acb_web.ZIP_PATH = os.path.join(work, "codeplug.zip")
 
 
@@ -99,7 +101,7 @@ def web(options, inputs=None, sources=None):
     return result, files
 
 
-def cli(options, inputs=None):
+def cli(options, inputs=None, config=None):
     """Run the same build through builder.py, over the same input files.
 
     Deliberately the files acb_web was pointed at rather than copies of them, so
@@ -112,7 +114,8 @@ def cli(options, inputs=None):
 
     args = [f"{acb_web.INPUT_OPTIONS[role]}={acb_web.input_path(role)}"
             for role in (inputs or REAL_INPUTS)]
-    args += [f"--output-directory={outdir}", f"--config={CONFIG}",
+    args += [f"--output-directory={outdir}",
+             f"--config={config or CONFIG}",
              f"--sorting={options.get('sorting', DEFAULTS['sorting'])}",
              f"--nicknames={options.get('nicknames', DEFAULTS['nicknames'])}",
              f"--hotspot-tx-permit="
@@ -263,6 +266,270 @@ def reports_failure_like_the_command_line():
     return problems
 
 
+####
+# CPS formats the visitor supplied
+####
+
+def added_format(name, source="4", format_file=None, layout=None):
+    """Add a CPS format the way an upload does, and return what the page hears.
+
+    The files are staged and handed to add_format(), which is the path the
+    worker takes: staging_path() checks the names the way the browser has them
+    checked, and add_format() decides whether they reach the config directory.
+    `layout` is the channel-defaults bytes to use instead of a packaged copy.
+    """
+    # No makedirs here: the worker writes to staging_path() without one, from a
+    # tab that may never have built, so staging_path() has to provide the place.
+    names = [f"channel-defaults-{name}.csv"]
+    if layout is None:
+        shutil.copy(os.path.join(CONFIG, f"channel-defaults-{source}.csv"),
+                    acb_web.staging_path(names[0]))
+    else:
+        with open(acb_web.staging_path(names[0]), "wb") as fh:
+            fh.write(layout)
+    if format_file is not None:
+        names.append(f"format-{name}.csv")
+        with open(acb_web.staging_path(names[1]), "w") as fh:
+            fh.write(format_file)
+    return json.loads(acb_web.add_format(json.dumps(names)))
+
+
+def clear_added_formats():
+    """Back to a tab that has never added a format -- or built, so no staging."""
+    for directory in (acb_web.CONFIG_DIRECTORY, acb_web.STAGING_DIRECTORY):
+        shutil.rmtree(directory, ignore_errors=True)
+    os.makedirs(acb_web.CONFIG_DIRECTORY)
+
+
+def format_menu():
+    return json.loads(acb_web.formats())
+
+
+def added_format_is_offered():
+    """A dropped-in format reaches the menu, flagged as the page has to flag it."""
+    clear_added_formats()
+    shipped = {f["name"] for f in format_menu()["formats"]}
+
+    added_format("9")
+    report = format_menu()
+    problems = []
+
+    if not report["ok"]:
+        problems.append("the menu reported an error: " + report.get("error", ""))
+
+    names = {f["name"] for f in report["formats"]}
+    if names != shipped | {"9"}:
+        problems.append(f"menu is {sorted(names)}, expected the shipped ones plus 9")
+
+    nine = next((f for f in report["formats"] if f["name"] == "9"), None)
+    if nine is None:
+        problems.append("the added format never reached the menu")
+    else:
+        # Both flags drive what the page says about it, so both have to be right.
+        if nine["tested"]:
+            problems.append("an added format was offered as tested")
+        if not nine["added"]:
+            problems.append("an added format was not marked as added")
+
+    for f in report["formats"]:
+        if f["name"] in shipped and f["added"]:
+            problems.append(f"packaged format {f['name']} was marked as added")
+
+    clear_added_formats()
+    return problems
+
+
+def added_format_builds_like_the_command_line():
+    """A build on an added format matches the command line on the same files."""
+    clear_added_formats()
+    added_format("9")
+
+    result, web_files = web({"cps_format": "9"})
+    done, cli_files = cli({"cps_format": "9"}, config=acb_web.CONFIG_DIRECTORY)
+    problems = compare(result, web_files, done, cli_files)
+
+    # And what it built is what the format it was copied from builds, which is
+    # what says the page did not quietly change the format on the way through.
+    _, four = web({"cps_format": "4"})
+    if web_files != four:
+        problems.append("the added format did not build what format 4 builds")
+
+    clear_added_formats()
+    return problems
+
+
+def added_format_survives_a_build():
+    """reset() empties the inputs between builds; it must not empty the formats."""
+    clear_added_formats()
+    added_format("9")
+
+    web({"cps_format": "9"})
+    problems = []
+    if "9" not in {f["name"] for f in format_menu()["formats"]}:
+        problems.append("the added format was gone after one build")
+
+    # A second build on it has to work without the file being supplied again.
+    result, _ = web({"cps_format": "9"})
+    if not result["ok"]:
+        problems.append("a second build on the added format failed")
+
+    clear_added_formats()
+    return problems
+
+
+def broken_format_file_leaves_the_menu_standing():
+    """A format file that will not parse is reported, not fatal.
+
+    The menu still has to offer what shipped, or a typo in a file the visitor
+    added would take the whole page down with it.  And the file must not stay
+    behind: build() passes --config whenever the directory holds anything, so a
+    bad file left there would fail every later build, on every format, until
+    the page was reloaded.
+    """
+    clear_added_formats()
+    report = added_format("9", format_file="zone_hyde,yes\n")
+
+    problems = []
+    if report["ok"]:
+        problems.append("a format file with an unknown key was accepted")
+    if not report.get("error"):
+        problems.append("nothing said what was wrong with it")
+    if {f["name"] for f in report["formats"]} != {"0", "1", "2", "3", "4"}:
+        problems.append("the shipped formats stopped being offered")
+
+    left = sorted(os.listdir(acb_web.CONFIG_DIRECTORY))
+    if left:
+        problems.append(f"the refused files were left in the config directory: {left}")
+    if sorted(os.listdir(acb_web.STAGING_DIRECTORY)):
+        problems.append("the refused files were left in the staging directory")
+
+    result, _ = web({"cps_format": "1"})
+    if not result["ok"]:
+        problems.append("a build on a shipped format failed after the refusal: "
+                        + (result.get("stderr") or result.get("crash") or "").strip())
+
+    clear_added_formats()
+    return problems
+
+
+def broken_upload_keeps_the_good_one():
+    """Re-adding a format with a broken file must not cost the working one.
+
+    A visitor fixing their format file will upload it more than once.  The
+    upload that fails has to leave the last one that worked in place, or every
+    typo would send them back to the start.
+    """
+    clear_added_formats()
+    added_format("9")
+    before, _ = web({"cps_format": "9"})
+
+    report = added_format("9", format_file="zone_hyde,yes\n")
+    problems = []
+    if report["ok"]:
+        problems.append("a format file with an unknown key was accepted")
+    if "9" not in {f["name"] for f in report["formats"]}:
+        problems.append("the working format was dropped from the menu")
+
+    after, _ = web({"cps_format": "9"})
+    if not after["ok"]:
+        problems.append("the working format no longer builds")
+    elif after["files"] != before["files"]:
+        problems.append("the working format builds something different now")
+
+    clear_added_formats()
+    return problems
+
+
+def latin1_format_file_is_normalised():
+    """A channel layout saved in Windows-1252 is read, as an input would be.
+
+    Spreadsheets write that encoding without asking, and a degree sign in a
+    heading is enough.  Inputs are normalised to UTF-8 before the builder sees
+    them; a format file has to get the same treatment, or the one upload a
+    visitor makes from their CPS export is the one that fails.
+    """
+    clear_added_formats()
+    with open(os.path.join(CONFIG, "channel-defaults-4.csv"), "rb") as fh:
+        # A heading the builder does not map, so the only thing the byte can
+        # change is whether the file is readable at all.
+        layout = fh.read().replace(b"Custom CTCSS", b"Custom CTCSS \xb0")
+
+    report = added_format("9", layout=layout)
+    problems = []
+    if not report["ok"]:
+        problems.append("the layout was refused: " + report.get("error", ""))
+    if "9" not in {f["name"] for f in report["formats"]}:
+        problems.append("the layout never reached the menu")
+
+    result, files = web({"cps_format": "9"})
+    if not result["ok"]:
+        problems.append("a build on it failed")
+    elif "Custom CTCSS \u00b0".encode("utf-8") not in files.get("channels.csv", b""):
+        problems.append("the heading did not come through as UTF-8")
+
+    clear_added_formats()
+    return problems
+
+
+def config_path_refuses_anything_else():
+    """The one check that decides where a file named by the page lands.
+
+    Two paths take a name from the page -- staging_path() for the worker's
+    write, config_path() for add_format()'s move -- and both have to refuse the
+    same things.
+    """
+    problems = []
+    for path_for, directory in ((acb_web.staging_path, acb_web.STAGING_DIRECTORY),
+                                (acb_web.config_path, acb_web.CONFIG_DIRECTORY)):
+        for name in ("../../etc/passwd", "channel-defaults-9.csv.bak", "analog.csv",
+                     "channel-defaults-../9.csv", "format-9.csv/x",
+                     "channel-defaults-.csv", "", "format-.csv"):
+            try:
+                path_for(name)
+                problems.append(f"{path_for.__name__} accepted {name!r}")
+            except ValueError:
+                pass
+
+        for name in ("channel-defaults-9.csv", "format-9.csv",
+                     "channel-defaults-D578UV_v2.csv"):
+            try:
+                where = path_for(name)
+            except ValueError:
+                problems.append(f"{path_for.__name__} refused {name!r}, which is a "
+                                f"format file name")
+                continue
+            if os.path.dirname(where) != directory:
+                problems.append(f"{name!r} would land in {os.path.dirname(where)}")
+
+    return problems
+
+
+def builds_without_a_config_directory():
+    """A build has to work when no format was ever added.
+
+    --config is checked by the builder now, so passing one unconditionally would
+    mean a build that dies on a directory the visitor never asked for and cannot
+    do anything about.  The directory is removed rather than emptied, because an
+    empty one that exists is a path --config would still accept: this is the case
+    that actually distinguishes the two.
+    """
+    shutil.rmtree(acb_web.CONFIG_DIRECTORY, ignore_errors=True)
+
+    problems = []
+    for role in REAL_INPUTS:
+        shutil.copy(os.path.join(REPO, REAL_INPUTS[role]), acb_web.input_path(role))
+    # Deliberately not web(), which calls reset() and would create the directory
+    # before build() ever looked for it.
+    result = json.loads(acb_web.build(json.dumps(dict(DEFAULTS, cps_format="1"))))
+
+    if not result["ok"]:
+        problems.append("a build with no config directory failed: "
+                        + result.get("stderr", "").strip())
+
+    clear_added_formats()
+    return problems
+
+
 CASES = [
     ("format-0", lambda: matches_command_line({"cps_format": "0"})),
     ("format-1", lambda: matches_command_line({"cps_format": "1"})),
@@ -289,6 +556,17 @@ CASES = [
     ("no-stale-outputs", no_stale_outputs),
     ("bom-stripped", bom_is_stripped),
     ("failure-reported", reports_failure_like_the_command_line),
+
+    # A CPS format the visitor added, which is the one thing the page can do that
+    # the command line cannot do for them.
+    ("config-path-refuses", config_path_refuses_anything_else),
+    ("added-format-offered", added_format_is_offered),
+    ("added-format-builds", added_format_builds_like_the_command_line),
+    ("added-format-survives-build", added_format_survives_a_build),
+    ("broken-format-file", broken_format_file_leaves_the_menu_standing),
+    ("broken-upload-keeps-good-one", broken_upload_keeps_the_good_one),
+    ("latin1-format-file", latin1_format_file_is_normalised),
+    ("builds-without-config-dir", builds_without_a_config_directory),
 ]
 
 

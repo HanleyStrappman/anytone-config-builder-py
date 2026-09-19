@@ -91,13 +91,10 @@
 
   <div class="field">
     <label for="cps_format">CPS format</label>
-    <select id="cps_format">
-      <option value="0">0 &mdash; AT-D868UV CPS</option>
-      <option value="1" selected>1 &mdash; the default</option>
-      <option value="2">2 &mdash; AT-D878UVII, AT-D878UV on later firmware</option>
-      <option value="3">3 &mdash; AT-D890UV CPS 1.05</option>
-      <option value="4">4 &mdash; AT-D878UVII CPS v4</option>
-    </select>
+    <!-- Filled in from the builder once the worker is up: a CPS format is a file
+         in the config directory rather than a list kept here, so the only thing
+         that knows what formats exist is the builder itself. -->
+    <select id="cps_format" disabled></select>
     <p class="note important">
       Which layout your CPS wants is a property of the <em>CPS</em>, not of the
       radio &mdash; a newer CPS for the same radio can read a different one.
@@ -107,6 +104,91 @@
       differ from column 11 onward, so the wrong choice can import without
       complaint and put every value in the wrong field.
     </p>
+
+    <details id="add-format">
+      <summary>My CPS is not in the list</summary>
+      <!-- The visitor has no README, so this is the whole of what they get to
+           read.  It is the "Adding a CPS format" section of the README carried
+           over, minus the command line; the key table below is the part to
+           keep in step when a key is added. -->
+      <p class="note">A CPS format is a file, not something built into this
+        page. The quickest start is the shipped format nearest your CPS: save
+        its files, change the headings and defaults to match a codeplug
+        exported from your CPS, rename both to a name of your own, and pick them
+        here. They join the list above.</p>
+      <ul class="filelist" id="format-files"></ul>
+
+      <h3><code>channel-defaults-<em>name</em>.csv</code> &mdash; required, and
+        usually the whole format</h3>
+      <p class="note">One row per column of your CPS's channel export, holding
+        the column number, the heading your CPS gives it, and the value to use
+        when the input CSVs do not say:</p>
+<pre class="guide">0,No.,REQUIRED
+1,Channel Name,REQUIRED
+...
+20,RX Color Code,0
+21,Slot,1
+22,Scan List,REQUIRED</pre>
+      <p class="note"><code>REQUIRED</code> marks a column the inputs must fill;
+        a build that reaches one still empty stops and says which. Whatever
+        stands where <em>name</em> is becomes the format's name in the list.
+        Which of the builder's fields lands in which column is worked out from
+        the headings, so a CPS that uses the names Anytone has used so far
+        needs nothing else.</p>
+
+      <h3><code>format-<em>name</em>.csv</code> &mdash; optional, beside it</h3>
+      <p class="note">For what a channel layout cannot say: what the zone,
+        scanlist and talkgroup files are called, and the handful of places
+        their shape differs. Without it, everything defaults to what formats
+        2, 3 and 4 all do, which is what a newer CPS is most likely to want.
+        A key and a value per row; rows beginning with <code>#</code> are
+        comments.</p>
+      <table class="guide">
+        <thead><tr><th>Key</th><th>Default</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><code>label</code></td><td>the format name</td>
+            <td>What the list above calls it.</td></tr>
+          <tr><td><code>tested</code></td><td><code>no</code></td>
+            <td>Whether it has been checked against a real CPS export.</td></tr>
+          <tr><td><code>freq_decimals</code></td><td><code>5</code></td>
+            <td>Decimal places for frequencies, or <code>as-is</code> to pass
+              the input through.</td></tr>
+          <tr><td><code>zone_hide</code></td><td><code>yes</code></td>
+            <td>The trailing <code>Zone Hide</code> column on zones.</td></tr>
+          <tr><td><code>talkgroup_notes</code></td><td><code>no</code></td>
+            <td><code>Country</code> and <code>Remarks</code> columns on
+              talkgroups.</td></tr>
+          <tr><td><code>member_freqs</code></td><td><code>yes</code></td>
+            <td>RX/TX frequency columns beside each channel name in zones and
+              scanlists.</td></tr>
+          <tr><td><code>airband</code></td><td><code>no</code></td>
+            <td>Whether this CPS reads the <code>AMAir.CSV</code> /
+              <code>AMZone.CSV</code> pair.</td></tr>
+          <tr><td><code>file.channels</code> etc.</td>
+            <td><code>channels.csv</code> etc.</td>
+            <td>What this CPS calls each of the four outputs:
+              <code>file.channels</code>, <code>file.zones</code>,
+              <code>file.scanlists</code>, <code>file.talkgroups</code>.</td></tr>
+          <tr><td><code>column.<em>n</em></code></td><td><em>derived</em></td>
+            <td>Force column <em>n</em>, for a heading the builder does not
+              recognise. Empty unmaps it.</td></tr>
+        </tbody>
+      </table>
+      <p class="note">A key that is not one of these is an error rather than
+        something skipped: a misspelled <code>zone_hide</code> that quietly did
+        nothing would produce a codeplug the CPS imports without complaint and
+        fills in wrong. Unless a format says <code>tested,yes</code>, building
+        on it warns that it has not been checked against a real CPS export.
+        Nothing stops you; compare what comes back against a codeplug exported
+        from your own CPS before trusting it.</p>
+
+      <h3>Pick the files</h3>
+      <p class="note important">Nothing is kept. The file lives in this tab and
+        goes when you close it, so keep your copy wherever you keep your other
+        codeplug CSVs and pick it again next time.</p>
+      <input type="file" id="file-format" accept=".csv" multiple>
+      <p class="note" id="format-added"></p>
+    </details>
   </div>
 
   <div class="field">

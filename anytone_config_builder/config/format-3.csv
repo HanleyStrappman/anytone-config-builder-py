@@ -1,0 +1,12 @@
+# AT-D890UV CPS 1.05 -- the 77-column layout.
+#
+# The one CPS that handles the AM airband as well as DMR, and it keeps the two
+# apart by name: the DMR zones and talkgroups take the prefix below, leaving
+# AMZone.CSV and AMAir.CSV for the airband.
+label,AT-D890UV CPS 1.05
+tested,yes
+airband,yes
+file.channels,Channel.CSV
+file.zones,DMRZones.CSV
+file.scanlists,ScanList.CSV
+file.talkgroups,DMRTalkGroups.CSV

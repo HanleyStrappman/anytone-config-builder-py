@@ -1,0 +1,11 @@
+# AT-D878UV CPS -- the layout the Perl original wrote, and the default.
+#
+# The only format that carries Country and Remarks on talkgroups, and the only
+# one that writes frequencies through as they were typed rather than to a fixed
+# number of decimals.  Both are kept as they were rather than tidied, so that a
+# codeplug built today matches one built by the Perl.
+label,AT-D878UV CPS (the default)
+tested,yes
+freq_decimals,as-is
+zone_hide,no
+talkgroup_notes,yes
