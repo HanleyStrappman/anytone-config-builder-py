@@ -38,6 +38,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "site"
 DIST = ROOT / "dist"
+CONFIG = ROOT / "anytone_config_builder" / "config"
 BUILD = ROOT / "site-build"
 
 # Pinned rather than floating: a Pyodide upgrade changes the Python underneath
@@ -113,6 +114,26 @@ def copy_examples():
     return examples
 
 
+def copy_formats():
+    """Copy the packaged CPS format files in, and return their relative paths.
+
+    The same files are inside the wheel, but a visitor writing a format of their
+    own wants one to start from, and the wheel is not a thing to ask them to
+    unzip.  Served as-is, so what they download is byte-for-byte what the
+    builder reads.
+    """
+    formats = []
+    (BUILD / "formats").mkdir(parents=True)
+
+    for path in sorted(CONFIG.glob("*.csv")):
+        shutil.copy2(path, BUILD / "formats" / path.name)
+        formats.append(f"./formats/{path.name}")
+
+    if not formats:
+        fail(f"no CPS format files found in {CONFIG}")
+    return formats
+
+
 def vendor_pyodide():
     """Download the Pyodide core build and serve it from the site itself.
 
@@ -163,6 +184,7 @@ def main():
     shutil.copy2(wheel, BUILD / wheel.name)
 
     examples = copy_examples()
+    formats = copy_formats()
     index_url = PYODIDE_CDN if args.pyodide_cdn else vendor_pyodide()
 
     # Everything the page needs to know that changes between builds, so that a
@@ -171,6 +193,7 @@ def main():
         "version": package_version(),
         "wheel": f"./{wheel.name}",
         "examples": examples,
+        "formats": formats,
         "pyodide": {"version": PYODIDE_VERSION, "indexURL": index_url},
     }
     (BUILD / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

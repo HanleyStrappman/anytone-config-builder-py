@@ -1,0 +1,192 @@
+{
+  "bad-boolean": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: 'zone_hide' in the format file '<config>/format-9.csv' is 'maybe', which is not a yes or a no.\n"
+  },
+  "bad-column-field": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: 'column.55' in the format file '<config>/format-9.csv' is 'colour_code', which is not one of bandwidth, call_type, color_code, contact, ctcss_dec, ctcss_enc, dmr_mode, mode, name, num, power, rx_freq, scanlist_name, squelch_mode, tg_id, time_slot, tx_freq, tx_permit, tx_prohibit.\n"
+  },
+  "bad-column-key": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: 'column.eleven' in the format file '<config>/format-9.csv' does not name a column number.\n"
+  },
+  "bad-decimals": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: 'freq_decimals' in the format file '<config>/format-9.csv' is 'lots', which is not a number of decimal places, or 'as-is'.\n"
+  },
+  "bad-key": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: 'zone_hyde' in the format file '<config>/format-9.csv' is not something this builder knows about.\n"
+  },
+  "bad-output-key": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: 'file.channel' in the format file '<config>/format-9.csv' is 'Chan.CSV', which is not one of file.channels, file.scanlists, file.talkgroups, file.zones.\n"
+  },
+  "bad-output-name": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: 'file.channels' in the format file '<config>/format-9.csv' is '../escape.csv', which is not a plain file name.\n"
+  },
+  "column-unmapped": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "013f3462765126bd3ce552a2083cc72d73da60c7c6b964690b125649e85b00ef",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": "WARNING: CPS format '9' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  },
+  "comments-and-blanks": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "d1635f154d8de087a818421e56ef9bd7fd4c52994b4e26562f10c8228333d084",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": "WARNING: CPS format '9' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  },
+  "drop-in": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "d1635f154d8de087a818421e56ef9bd7fd4c52994b4e26562f10c8228333d084",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": "WARNING: CPS format '9' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  },
+  "drop-in-38-column": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "3cec844702b84c04698337f33e91044875019a8f234b0e0becedbcfa789ffea7",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": "WARNING: CPS format '9' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  },
+  "drop-in-with-format-file": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "3cec844702b84c04698337f33e91044875019a8f234b0e0becedbcfa789ffea7",
+      "scanlists.csv": "809556bdd87ebea0d1ac9dddc2479e70023a2c3d79c0d2cc273b6ac4b04fbe7a",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "4e0ad6cb4c267bfe2f023a40b781fef2940cd70ac3a3d4fef4813712bf1fa286"
+    },
+    "output": ""
+  },
+  "empty-layout": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: The channel layout in '<config>/channel-defaults-9.csv' has no column this builder recognises for: No., Channel Name, Receive Frequency, Transmit Frequency, Channel Type, Transmit Power, Band Width, CTCSS/DCS Decode, CTCSS/DCS Encode, Contact, Contact Call Type, Busy Lock/TX Permit, Squelch Mode, Color Code, Slot, Scan List, TX Prohibit.  Either the file is not a channel layout, or its CPS calls those columns something new -- in which case name them in 'format-9.csv', one 'column.<number>' row each.\n"
+  },
+  "illegal-name-ignored": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: Invalid CPS Format: '9 spaces' is not one of: 0, 1, 2, 3, 4 [On line #0 of none file.]\n"
+  },
+  "labelled-and-tested": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "d1635f154d8de087a818421e56ef9bd7fd4c52994b4e26562f10c8228333d084",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": ""
+  },
+  "layout-bad-index": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: A row of the channel-defaults file '<config>/channel-defaults-9.csv' starts with 'abc', where a column number was expected.\n"
+  },
+  "layout-huge-index": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: A row of the channel-defaults file '<config>/channel-defaults-9.csv' starts with '1e400', where a column number was expected.\n"
+  },
+  "layout-not-utf8": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: The channel-defaults file is not UTF-8 (byte 0xB0: invalid start byte).\n"
+  },
+  "layout-short-row": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: A row of the channel-defaults file '<config>/channel-defaults-9.csv' has fewer than the 3 columns expected.\n"
+  },
+  "legacy-shape": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "a8758573624bd4c80cf069e83fb13a57f228e260fd53db14e798dc958c716bb2",
+      "scanlists.csv": "809556bdd87ebea0d1ac9dddc2479e70023a2c3d79c0d2cc273b6ac4b04fbe7a",
+      "talkgroups.csv": "9a7fcb6362ce6e62d507750066322ce98a9bff51a28f883697817c40c7351bd8",
+      "zones.csv": "4e0ad6cb4c267bfe2f023a40b781fef2940cd70ac3a3d4fef4813712bf1fa286"
+    },
+    "output": "WARNING: CPS format '9' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  },
+  "one-column-row": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: A row of the format file '<config>/format-9.csv' has only one column, where a key and a value were expected.\n"
+  },
+  "overlay-packaged": {
+    "exit": 0,
+    "files": {
+      "Channel.CSV": "a7de0ecf325a080d2b91c58bd73efb4cec7e103c9b326045d8eda0ba4b29dcb6",
+      "DMRTalkGroups.CSV": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "DMRZones.CSV": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b",
+      "ScanList.CSV": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e"
+    },
+    "output": ""
+  },
+  "override-packaged": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "3cec844702b84c04698337f33e91044875019a8f234b0e0becedbcfa789ffea7",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": "WARNING: CPS format '1' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  },
+  "renamed-outputs": {
+    "exit": 0,
+    "files": {
+      "Chan.CSV": "d1635f154d8de087a818421e56ef9bd7fd4c52994b4e26562f10c8228333d084",
+      "Scan.CSV": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "Tg.CSV": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "Zn.CSV": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": "WARNING: CPS format '9' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  },
+  "unknown-format": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: Invalid CPS Format: 'nope' is not one of: 0, 1, 2, 3, 4, 9 [On line #0 of none file.]\n"
+  },
+  "unknown-header": {
+    "exit": 255,
+    "files": {},
+    "output": "ERROR: The channel layout in '<config>/channel-defaults-9.csv' has no column this builder recognises for: Channel Name.  Either the file is not a channel layout, or its CPS calls those columns something new -- in which case name them in 'format-9.csv', one 'column.<number>' row each.\n"
+  },
+  "unknown-header-named": {
+    "exit": 0,
+    "files": {
+      "channels.csv": "bbc5ea6e8fa4a1e751cf363c61c20f51301a69847d1f776affe625580718257b",
+      "scanlists.csv": "70cf72d813d8417ff17036a40ed8a9a13d61b80ec08c95f84bdfab6d08169f0e",
+      "talkgroups.csv": "454e54c7ecd458d2715de766e2d18bcd43f3707e218635b4a6237f9822a8e8f6",
+      "zones.csv": "c6f396c591f4144d5232a229216c6e94b11ddade12625c51de038d5c138c847b"
+    },
+    "output": "WARNING: CPS format '9' has not been checked against a real CPS export. The files it writes may not import, or may import into the wrong fields. Compare them against a codeplug exported from your own CPS before trusting them.\n"
+  }
+}

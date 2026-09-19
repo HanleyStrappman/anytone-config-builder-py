@@ -178,6 +178,40 @@ button:disabled {
 
 .filelist code { font-size: .9rem; }
 .filelist span { color: var(--muted); }
+.filelist a { color: var(--accent); }
+.filelist a + a { margin-left: 1rem; }
+
+/* The format guide under "My CPS is not in the list": a worked excerpt and a
+   key table, kept at note size because it is a note, just a long one. */
+#add-format h3 { margin-top: 1.1rem; }
+#add-format .filelist { margin: .6rem 0 0; }
+
+pre.guide {
+    margin: .5rem 0 0;
+    padding: .6rem .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    font-size: .8rem;
+    line-height: 1.5;
+    overflow-x: auto;
+}
+
+table.guide {
+    margin: .5rem 0 0;
+    border-collapse: collapse;
+    font-size: .85rem;
+    color: var(--muted);
+}
+
+table.guide th,
+table.guide td {
+    padding: .35rem .6rem .35rem 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+}
+
+table.guide th { font-weight: 600; }
 
 a.download {
     display: inline-block;

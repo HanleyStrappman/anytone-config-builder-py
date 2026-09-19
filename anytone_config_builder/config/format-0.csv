@@ -1,0 +1,10 @@
+# AT-D868UV CPS -- the 38-column channel layout.
+#
+# The oldest of the four files: no frequency columns beside the channels named in
+# zones and scanlists, and no Country or Remarks on talkgroups.  Its channel row
+# also predates the talkgroup ID and DMR mode columns entirely.
+label,AT-D868UV CPS
+tested,yes
+zone_hide,no
+talkgroup_notes,no
+member_freqs,no

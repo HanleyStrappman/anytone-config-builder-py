@@ -126,7 +126,7 @@
   "empty-config-value": {
     "exit": 255,
     "files": {},
-    "output": "ERROR: Couldn't open file '/channel-defaults-1.csv': No such file or directory\n"
+    "output": "ERROR: --config needs the name of a directory.\n"
   },
   "missing-analog-arg": {
     "exit": 255,

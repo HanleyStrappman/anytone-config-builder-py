@@ -110,11 +110,11 @@ ERROR: Invalid Power Level: 'Massive' is not one of: Low, Mid, High, Turbo [On l
 | `--talkgroups-csv` | *required* | Talkgroup names and IDs. |
 | `--am-air-csv` | *optional* | AM airband channels. Only format `3` reads the result. |
 | `--output-directory` | *required* | Where the output files are written. Must exist. |
-| `--config` | *packaged* | Directory holding the channel defaults files. Defaults to the copy inside the package. |
+| `--config` | *packaged* | A directory of extra CPS formats, read on top of the ones that ship. |
 | `--sorting` | `alpha` | `alpha`, `repeaters-first`, or `analog-first`. |
 | `--nicknames` | `prefix` | `off`, `prefix`, `suffix`, `prefix-forced`, `suffix-forced`. |
 | `--hotspot-tx-permit` | `same-color-code` | `same-color-code` or `always`. |
-| `--cps-format` | `1` | `0` through `4`. Which CPS layout to write. |
+| `--cps-format` | `1` | Which CPS layout to write. `0` through `4` ship; `--config` can add more. |
 
 `--sorting` controls zone order: `alpha` sorts every zone by name, while
 `repeaters-first` and `analog-first` put the repeater zones before or after the
@@ -130,6 +130,10 @@ wants is a property of the CPS rather than of the radio — a newer CPS for the
 same radio can read a different layout. So the layouts are numbered, and
 `--cps-format` picks one. Formats `0` to `2` and `4` agree on the file names and
 differ only in contents; format `3` writes the names AT-D890UV CPS 1.05 uses.
+
+These five are the ones that ship, not the ones the tool can write: a format is
+a file in the config directory, and adding one is adding that file. See
+[Adding a CPS format](#adding-a-cps-format) below.
 
 | | `0` | `1` | `2` | `3` | `4` |
 | --- | --- | --- | --- | --- | --- |
@@ -187,9 +191,77 @@ If an import is rejected or lands values in the wrong fields, try another
 format rather than assuming your radio's name picks it — export a codeplug from
 your own CPS and compare its headers against the four generated files.
 
-Each format has its own defaults file in the `--config` directory —
-`channel-defaults-0.csv` through `channel-defaults-3.csv` — giving the value for
-every CPS field the inputs do not mention.
+### Adding a CPS format
+
+A format is not a list in the code — it is a file. Every
+`channel-defaults-<name>.csv` in the config directory is a format, named after
+whatever stands where `<name>` is, and that one file is usually the whole of it:
+
+```text
+channel-defaults-D578UV.csv     ->  --cps-format=D578UV
+```
+
+The file gives the value for every CPS field the inputs do not mention, one row
+per column, holding the column number, the heading your CPS gives it, and the
+default:
+
+```csv
+0,No.,REQUIRED
+1,Channel Name,REQUIRED
+...
+20,RX Color Code,0
+21,Slot,1
+22,Scan List,REQUIRED
+```
+
+Which of the builder's fields lands in which column is worked out from those
+headings, so a CPS that uses the names Anytone has used so far needs nothing
+else. `REQUIRED` marks a column the inputs must fill; a build that reaches one
+still empty stops and says which.
+
+Everything a channel layout cannot say — what the other three files are called,
+and the handful of places their shape differs — defaults to what formats `2`,
+`3` and `4` all do, which is what a newer CPS is most likely to want. A CPS that
+disagrees needs a `format-<name>.csv` beside it, also CSV, a key and a value per
+row:
+
+| Key | Default | |
+| --- | --- | --- |
+| `label` | the format name | What the website calls it in the format menu. |
+| `tested` | `no` | Whether it has been checked against a real CPS export. |
+| `freq_decimals` | `5` | Decimal places for frequencies, or `as-is` to pass the input through. |
+| `zone_hide` | `yes` | The trailing `Zone Hide` column on zones. |
+| `talkgroup_notes` | `no` | `Country` and `Remarks` columns on talkgroups. |
+| `member_freqs` | `yes` | RX/TX frequency columns beside each channel zones and scanlists name. |
+| `airband` | `no` | Whether this CPS reads the `AMAir.CSV` / `AMZone.CSV` pair. |
+| `file.channels` etc. | `channels.csv` etc. | What this CPS calls each of the four outputs. |
+| `column.<n>` | *derived* | Force column `<n>`, for a heading the builder does not recognise. Empty unmaps it. |
+
+Rows beginning with `#` are comments. A key that is not one of these is an
+error rather than something skipped, because a misspelled `zone_hide` that
+quietly did nothing would produce a codeplug the CPS imports without complaint
+and fills in wrong. The five packaged formats are defined this way and nothing
+else — `anytone_config_builder/config` is worth reading as the worked example.
+
+Unless a format says `tested,yes`, building on it warns that it has not been
+checked against a real CPS export. Nothing stops you; compare what comes back
+against a codeplug exported from your own CPS before trusting it.
+
+`--config` names a directory of your own. It is read **on top of** the packaged
+one rather than instead of it, so it need hold only what you are adding, and a
+format of the same name as a packaged one replaces it:
+
+```console
+$ mkdir ~/cps-formats
+$ cp channel-defaults-D578UV.csv ~/cps-formats/
+$ anytone-config-builder ... --config=~/cps-formats --cps-format=D578UV
+```
+
+The website can do the same thing without a checkout: under *CPS format*, open
+"My CPS is not in the list". The section explains the two files, offers the
+packaged formats for download as something to start from, and takes the result
+back through the same picker. It joins the menu for as long as the tab is open
+— nothing is stored, so keep your copy where you keep your other codeplug CSVs.
 
 ### Nicknames
 
@@ -323,11 +395,15 @@ limits are there so a corrupt or hostile file is turned away rather than read
 into memory — which matters most in the browser, where it lands in the wasm
 heap.
 
-The `--config` directory supplies the value for every CPS field the inputs don't
-mention, in a file per CPS format. It defaults to `anytone_config_builder/config`
-inside the package, wherever that package happens to live. To change defaults
-across all generated channels, either edit the packaged files in a checkout or
-copy the directory somewhere and point `--config` at it.
+The config directory supplies the value for every CPS field the inputs don't
+mention, in a file per CPS format. The packaged one is
+`anytone_config_builder/config`, wherever that package happens to live, and it
+is always read. `--config` names a second directory read on top of it, which is
+how a format is added without touching the package — see
+[Adding a CPS format](#adding-a-cps-format). To change the defaults every
+generated channel starts from, edit the packaged files in a checkout, or put an
+edited copy of the one format you care about in a `--config` directory of your
+own.
 
 ## Before importing into the CPS
 
@@ -357,7 +433,8 @@ copy the directory somewhere and point `--config` at it.
 - **A blank line mid-file is skipped** rather than parsed as a row, because
   Python's `csv` yields `[]` where Perl's `Text::CSV` yields a one-element row.
 - **`--cps-format` is new.** The Perl only ever wrote the one layout, which
-  survives as format `1`, the default.
+  survives as format `1`, the default. The other four, and any you add
+  yourself, are layouts it could not write at all.
 - **`--nicknames` defaults to `prefix`**, where the Perl defaulted to `off`. On
   a repeater matrix of any size `off` names every channel after its talkgroup
   alone, so a run with no flags produced thousands of channels sharing a hundred
@@ -403,7 +480,9 @@ The builder is stdlib-only and therefore runs unmodified under
 [Pyodide](https://pyodide.org), so the visitor's CSVs are never uploaded; there
 is no server to upload them to. The page calls the same `cli()` the `acb`
 command does, over the same packaged channel-defaults files, so its output is
-byte-for-byte what the command line would have written.
+byte-for-byte what the command line would have written — including for a CPS
+format the visitor adds, which the page hands to the builder the same way
+`--config` does.
 
 The wheel is rebuilt on every run and the page reads its version from
 `manifest.json`, so a `bump-my-version` bump reaches the site by rebuilding it
@@ -554,14 +633,16 @@ and buy nothing.
 python3 tests/test_output_regression.py
 python3 tests/test_error_regression.py
 python3 tests/test_args_regression.py
+python3 tests/test_format_regression.py
 python3 tests/test_web_equivalence.py
 ```
 
-Golden-file regression tests covering the generated files for all five CPS
-formats across all 30 combinations of `--sorting`, `--nicknames` and
-`--hotspot-tx-permit`, 55 malformed-input cases, and 25 command-line cases. They need nothing installed
-and run from any directory. See [tests/README.md](tests/README.md) for how to
-re-record them after an intentional change.
+Golden-file regression tests covering the generated files for all five packaged
+CPS formats across all 30 combinations of `--sorting`, `--nicknames` and
+`--hotspot-tx-permit`, 55 malformed-input cases, 25 command-line cases, and 30
+format-discovery cases. They need nothing installed and run from any directory.
+See [tests/README.md](tests/README.md) for how to re-record them after an
+intentional change.
 
 The fourth is not a golden-file test: it runs the [website](#website)'s builder
 and the command line over the same inputs and asserts they cannot be told apart,
