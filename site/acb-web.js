@@ -26,7 +26,7 @@ const DEFAULT_FORMAT = "1";
 // The two files a CPS format is made of, so a picked file can be checked before
 // it is sent rather than after.  Kept in step with CONFIG_FILE_RE in acb_web.py,
 // which is the check that actually applies.
-const FORMAT_FILE_RE = /^(?:channel-defaults|format)-[A-Za-z0-9_-]+\.csv$/;
+const FORMAT_FILE_RE = /^(?:channel-defaults|format)-([A-Za-z0-9_-]+)\.csv$/;
 
 // role -> {name, buffer}, or null for "not supplied".
 const chosen = {};
@@ -308,6 +308,46 @@ function showFormats(report) {
     }
 }
 
+// Lists the shipped format files for download, one row per format, so that a
+// visitor writing a format of their own has one to start from.  Built from the
+// manifest rather than from what the builder reports, so it does not wait on
+// the worker: these are static files, and a format the visitor added is not
+// listed because they already have it.
+function showFormatFiles() {
+    const list = el("format-files");
+    const byName = new Map();
+
+    (manifest.formats || []).forEach((path) => {
+        const file = path.split("/").pop();
+        const match = FORMAT_FILE_RE.exec(file);
+        if (!match) {
+            return;
+        }
+        if (!byName.has(match[1])) {
+            byName.set(match[1], []);
+        }
+        byName.get(match[1]).push({ file: file, path: path });
+    });
+
+    byName.forEach((files, name) => {
+        const item = document.createElement("li");
+        const label = document.createElement("code");
+        label.textContent = name;
+        item.appendChild(label);
+
+        const links = document.createElement("span");
+        files.forEach((entry) => {
+            const link = document.createElement("a");
+            link.href = new URL(entry.path, window.location.href);
+            link.download = entry.file;
+            link.textContent = entry.file;
+            links.appendChild(link);
+        });
+        item.appendChild(links);
+        list.appendChild(item);
+    });
+}
+
 // Sends a picked format file to the worker, which writes it where the builder
 // will find it and reports back what that changed.
 function addFormatFiles(picked) {
@@ -396,6 +436,7 @@ async function start() {
     el("examples").addEventListener("click", loadExamples);
 
     manifest = await (await fetch(new URL("./manifest.json", window.location.href))).json();
+    showFormatFiles();
 
     worker = new Worker(new URL("./acb-worker.js", window.location.href));
     worker.onmessage = onWorkerMessage;

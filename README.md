@@ -258,9 +258,10 @@ $ anytone-config-builder ... --config=~/cps-formats --cps-format=D578UV
 ```
 
 The website can do the same thing without a checkout: under *CPS format*, open
-"My CPS is not in the list" and pick the file. It joins the menu for as long as
-the tab is open — nothing is stored, so keep your copy where you keep your other
-codeplug CSVs.
+"My CPS is not in the list". The section explains the two files, offers the
+packaged formats for download as something to start from, and takes the result
+back through the same picker. It joins the menu for as long as the tab is open
+— nothing is stored, so keep your copy where you keep your other codeplug CSVs.
 
 ### Nicknames
 
